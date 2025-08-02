@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voicemeeter Remote</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" href="style.css">
+    <script src="jquery.js"></script>
+    <script src="components.js"></script>
+    <script src="vm.js"></script>
+    <script src="drawing.js"></script>
+    <script src="main.js"></script>
+</head>
+<body>
+    <div class="header">
+        <span class="header-title">Voicemeeter Remote</span>
+        <div class="header-views" id="views">
+            <span class="header-view" id="view-all">All</span>
+            <span class="header-view" id="view-inputs">Inputs</span>
+            <span class="header-view" id="view-outputs">Outputs</span>
+        </div>
+        <span class="spacer"></span>
+        <div class="header-status" id="status-bar">
+            <material-symbol class="status-icon" id="status-connected">cell_tower</material-symbol>
+            <material-symbol class="status-icon" id="status-receiving">call_received</material-symbol>
+            <material-symbol class="status-icon" id="status-sending">call_made</material-symbol>
+        </div>
+    </div>
+    <div class="channel-view" id="channel-view">
+        <div class="channel-view-group" id="channel-view-group-inputs">
+            <div class="channel-view-header">
+                <material-symbol class="channel-view-icon">input</material-symbol>
+                <span class="channel-view-title">Inputs</span>
+            </div>
+            <div class="channel-list" id="input-channels"></div>
+        </div>
+        <div class="channel-view-group" id="channel-view-group-outputs">
+            <div class="channel-view-header">
+                <material-symbol class="channel-view-icon">output</material-symbol>
+                <span class="channel-view-title">Outputs</span>
+            </div>
+            <div class="channel-list" id="output-channels"></div>
+        </div>
+    </div>
+    <div class="details-view" id="details-view" style="display: none;">
+        <div class="details-button" id="details-back-button">
+            <material-symbol class="button-icon">collapse_content</material-symbol>
+            <span class="button-label">Close</span>
+        </div>
+        <div class="channel"></div>
+        <div class="options">
+            <div class="option" id="options-routing">
+                <span class="option-title"><material-symbol>arrow_split</material-symbol><span>Routing</span></span>
+            </div>
+            <div class="option-column">
+                <div class="option" id="options-input">
+                    <span class="option-title"><material-symbol>input</material-symbol><span>Input</span></span>
+                </div>
+                <div class="option" id="options-effects">
+                    <span class="option-title">
+                        <material-symbol>tune</material-symbol>
+                        <span id="options-effect-title-input">Effects</span>
+                        <span id="options-effect-title-output">Effect Returns</span>
+                    </span>
+                </div>
+            </div>
+            <div class="option" id="options-compressor">
+                <span class="option-title"><material-symbol>compress</material-symbol><span>Compressor</span></span>
+                <canvas id="compressor-preview"></canvas>
+            </div>
+            <div class="option" id="options-gate">
+                <span class="option-title"><material-symbol>door_front</material-symbol>Gate</span>
+                <canvas id="gate-preview"></canvas>
+            </div>
+            <div class="option" id="options-simple-eq">
+                <span class="option-title"><material-symbol>equalizer</material-symbol><span>EQ</span></span>
+            </div>
+            <div class="option" id="options-advanced-eq">
+                <span class="option-title"><material-symbol>equalizer</material-symbol><span>EQ</span></span>
+                <canvas id="advanced-eq-preview"></canvas>
+                <div id="advanced-eq-cells"></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
