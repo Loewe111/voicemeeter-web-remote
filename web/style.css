@@ -22,6 +22,13 @@ body {
     grid-template-rows: auto 1fr;
 }
 
+@font-face {
+  font-family: 'Material Symbols Sharp';
+  font-style: normal;
+  font-weight: 400;
+  src: url(https://fonts.gstatic.com/s/materialsymbolssharp/v263/gNNBW2J8Roq16WD5tFNRaeLQk6-SHQ_R00k4c2_whPnoY9ruReaU4bHmz74m0ZkGH-VBYe1x0TV6x4yFH8F-H5OdzEL3sVTgJtfbYxOLojCL.woff2) format('woff2');
+}
+
 material-symbol {
     font-family: 'Material Symbols Sharp', sans-serif;
     vertical-align: middle;
@@ -576,9 +583,9 @@ material-symbol {
     box-sizing: border-box;
 }
 
-/* #options-advanced-eq {
+#options-advanced-eq {
     flex: 1;
-} */
+}
 
 #advanced-eq-cells {
     display: grid;
