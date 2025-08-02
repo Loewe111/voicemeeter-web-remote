@@ -131,7 +131,7 @@ material-symbol {
     align-items: stretch;
     padding: 0.25rem;
     gap: 0.25rem;
-    overflow: scroll;
+    overflow: auto;
 }
 
 .channel-view-group {
@@ -460,7 +460,7 @@ material-symbol {
     margin: 0.25rem;
     padding: 0.25rem;
     gap: 0.5rem;
-    overflow: scroll;
+    overflow: auto;
 }
 
 .details-view .channel {
