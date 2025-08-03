@@ -8,8 +8,13 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Create Executable
-        uses: Martin005/pyinstaller-action@v1.2.0
+        uses: sayyid5416/pyinstaller@v1.8.0
         with:
           python_ver: '3.6'
           spec: 'main.spec'
           requirements: 'requirements.txt'
+      - name: Upload Files
+        uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path: /dist/main
