@@ -1,16 +1,32 @@
+import os
+import sys
 import voicemeeterlib
 import tomllib
 import aiohttp
 from aiohttp import web
 import asyncio
 import logging
+from log import LogFormatter
 
 vm = None
 
-with open("config.toml", "rb") as f:
-    CONFIG = tomllib.load(f)
+# Set up logging
+stream_handler = logging.StreamHandler()
+stream_handler.setLevel(logging.DEBUG)
+stream_handler.setFormatter(LogFormatter())
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+log = logging.getLogger("main")
+logging.basicConfig(level=logging.INFO, handlers=[stream_handler])
+log.setLevel(logging.DEBUG)
+
+if getattr(sys, 'frozen', False):
+    FILE_DIR = sys._MEIPASS
+else:
+    FILE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+print(f"Config file path: {os.path.join(FILE_DIR, 'config.toml')}")
+with open(os.path.join(FILE_DIR, "config.toml"), "rb") as f:
+    CONFIG = tomllib.load(f)
 
 OUTPUT_CHANNEL_NAMES = []
 INPUT_EFFECT_NAMES = []
@@ -76,7 +92,7 @@ async def send_busses(ws):
             message["busses"].append(bus_data)
         await ws.send_json(message)
     except Exception as e:
-        logging.error(f"Error sending bus data: {e}")
+        log.error(f"Error sending bus data: {e}")
 
 async def send_strips(ws):
     try:
@@ -136,7 +152,7 @@ async def send_strips(ws):
             message["strips"].append(strip_data)
         await ws.send_json(message)
     except Exception as e:
-        logging.error(f"Error sending strip data: {e}")
+        log.error(f"Error sending strip data: {e}")
 
 async def rec_busses(ws, data):
     try:
@@ -153,7 +169,7 @@ async def rec_busses(ws, data):
             for i, fx_value in enumerate(data['values']['fx']):
                 setattr(bus, OUTPUT_EFFECT_NAMES[i], fx_value)
     except Exception as e:
-        logging.error(f"Error updating bus: {e}")
+        log.error(f"Error updating bus: {e}")
 
 async def rec_strips(ws, data):
     try:
@@ -203,7 +219,7 @@ async def rec_strips(ws, data):
             strip.gate.release = data['values']['gate'].get('release', strip.gate.release)
 
     except Exception as e:
-        logging.error(f"Error updating strip: {e}")
+        log.error(f"Error updating strip: {e}")
 
 async def parameter_poller(ws, session):
     while not ws.closed:
@@ -229,7 +245,7 @@ async def level_poller(ws):
             }
             await ws.send_json(levels)
         except Exception as e:
-            logging.error(f"Error sending levels: {e}")
+            log.error(f"Error sending levels: {e}")
         await asyncio.sleep(CONFIG['levels']['polling_interval'])
 
 async def init_message(ws):
@@ -246,7 +262,7 @@ async def websocket_handler(request):
     ws = web.WebSocketResponse()
     await ws.prepare(request)
 
-    logging.info("Websocket connected")
+    log.info("Websocket connected")
     await init_message(ws)
     session = {"ignoreUpdate": False, "dirty": False}
     sessions.append(session)
@@ -269,25 +285,25 @@ async def websocket_handler(request):
                     await rec_strips(ws, data)
                     session["ignoreUpdate"] = True
             elif msg.type == aiohttp.WSMsgType.ERROR:
-                logging.error(f"WS Error: {ws.exception}")
+                log.error(f"WS Error: {ws.exception}")
     finally:
         parameter_polling_task.cancel()
         level_polling_task and level_polling_task.cancel()
         await parameter_polling_task
         await level_polling_task
 
-    logging.info("Websocket disconnected")
+    log.info("Websocket disconnected")
     sessions.remove(session)
     return ws
 
 async def index(request):
-    return web.FileResponse('./web/index.html')
+    return web.FileResponse(os.path.join(FILE_DIR, 'web/index.html'))
 
 if __name__ == '__main__':
     app = web.Application()
     app.router.add_get('/', index)
     app.router.add_get('/ws', websocket_handler)
-    app.router.add_static('/', path='./web', name='web')
+    app.router.add_static('/', path=os.path.join(FILE_DIR, 'web'), name='web')
 
     with voicemeeterlib.api(CONFIG['voicemeeter']['kind']) as vm:
         if CONFIG['voicemeeter']['lock']:
@@ -295,6 +311,6 @@ if __name__ == '__main__':
         try:
             web.run_app(app, host=CONFIG['http']['host'], port=CONFIG['http']['port'], access_log=None)
         except KeyboardInterrupt:
-            logging.info("Server stopped by user")
+            log.info("Server stopped by user")
             if CONFIG['voicemeeter']['lock']:
                 vm.command.lock = False
