@@ -323,7 +323,7 @@ material-symbol {
 
     z-index: 1;
 
-    background: url(/images/fader.png) no-repeat center center;
+    background: url(/images/fader.png) no-repeat center center, linear-gradient(#fff, #333, #fff); 
     background-size: 100% 100%;
     border-radius: 2px;
     transform: translateY(-50%) translateX(-50%);
