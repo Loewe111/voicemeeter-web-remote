@@ -81,6 +81,70 @@ def deserialize_eq(eq, data):
                 cell.gain = cell_data.get("gain", cell.gain)
                 cell.q = cell_data.get("q", cell.q)
 
+def serialize_vban(vm):
+    return {
+        "incoming": [
+            {
+                "enabled": stream.on,
+                "name": stream.name,
+                "ip": stream.ip,
+                "port": stream.port,
+                "samplerate": stream.sr,
+                "channels": stream.channel,
+                "format": stream.bit,
+                "quality": stream.quality,
+                "route": stream.route
+            } for stream in vm.vban.instream[0:8]
+        ],
+        "outgoing": [
+            {
+                "enabled": stream.on,
+                "name": stream.name,
+                "ip": stream.ip,
+                "port": stream.port,
+                "samplerate": stream.sr,
+                "channels": stream.channel,
+                "format": stream.bit,
+                "quality": stream.quality,
+                "route": stream.route
+            } for stream in vm.vban.outstream[0:8]
+        ]
+    }
+
+async def send_vban(ws):
+    try:
+        message = serialize_vban(vm)
+        await ws.send_json({"vban": message})
+    except Exception as e:
+        log.error(f"Error sending VBAN data: {e}")
+
+async def rec_vban(ws, data):
+    try:
+        stream = None
+        if data["direction"] == "incoming":
+            stream = vm.vban.instream[data["index"]]
+        elif data["direction"] == "outgoing":
+            stream = vm.vban.outstream[data["index"]]
+        if stream:
+            if stream.on != data["values"].get("enabled", stream.on):
+                stream.on = data["values"].get("enabled", stream.on)
+            if stream.name != data["values"].get("name", stream.name):
+                stream.name = data["values"].get("name", stream.name)
+            if stream.ip != data["values"].get("ip", stream.ip):
+                stream.ip = data["values"].get("ip", stream.ip)
+            if stream.port != data["values"].get("port", stream.port):
+                stream.port = data["values"].get("port", stream.port)
+            if stream.quality != data["values"].get("quality", stream.quality):
+                stream.quality = data["values"].get("quality", stream.quality)
+            if stream.route != data["values"].get("route", stream.route):
+                stream.route = data["values"].get("route", stream.route)
+            if data["direction"] == "outgoing":
+                stream.sr = data["values"].get("samplerate", stream.sr)
+                stream.channel = data["values"].get("channels", stream.channel)
+                stream.bit = data["values"].get("format", stream.bit)
+    except Exception as e:
+        log.error(f"Error receiving VBAN data: {e}")
+
 async def send_busses(ws):
     try:
         message = {
@@ -237,6 +301,7 @@ async def parameter_poller(ws, session):
             else:
                 await send_busses(ws)
                 await send_strips(ws)
+                await send_vban(ws)
             session['dirty'] = False
         await asyncio.sleep(CONFIG['general']['polling_interval'])
 
@@ -285,11 +350,15 @@ async def websocket_handler(request):
                 if data.get("type") == "update":
                     await send_busses(ws)
                     await send_strips(ws)
+                    await send_vban(ws)
                 elif data.get("type") == "bus":
                     await rec_busses(ws, data)
                     session["ignoreUpdate"] = True
                 elif data.get("type") == "strip":
                     await rec_strips(ws, data)
+                    session["ignoreUpdate"] = True
+                elif data.get("type") == "vban":
+                    await rec_vban(ws, data)
                     session["ignoreUpdate"] = True
             elif msg.type == aiohttp.WSMsgType.ERROR:
                 log.error(f"WS Error: {ws.exception}")

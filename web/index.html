@@ -20,6 +20,8 @@
             <span class="header-view" id="view-all">All</span>
             <span class="header-view" id="view-inputs">Inputs</span>
             <span class="header-view" id="view-outputs">Outputs</span>
+            <span class="header-view-seperator"></span>
+            <span class="header-view" id="view-settings">Settings</span>
         </div>
         <span class="spacer"></span>
         <div class="header-status" id="status-bar">
@@ -82,6 +84,136 @@
                 <canvas id="advanced-eq-preview"></canvas>
                 <div id="advanced-eq-cells"></div>
             </div>
+        </div>
+    </div>
+    <div class="settings-view" id="settings-view" style="display: none;">
+        <div class="settings-nav-sidebar">
+            <span class="settings-nav-item" id="settings-nav-item-vban">VBAN</span>
+            <span class="settings-nav-item" id="settings-nav-item-devices">Devices</span>
+        </div>
+        <div class="settings-view-group" id="settings-vban">
+            <span class="settings-view-header">
+                <material-symbol class="settings-view-icon">lan</material-symbol>
+                <span class="settings-view-title">VBAN</span>
+            </span>
+            <div class="settings-view-content" id="settings-vban-incoming">
+                <span class="settings-view-subheader">
+                    <material-symbol class="settings-view-icon">call_received</material-symbol>
+                    <span class="settings-view-title">Incoming Streams</span>
+                </span>
+                <div class="vban-list" id="vban-incoming-list">
+                    <!-- Header -->
+                    <span class="vban-list-header">Enabled</span>
+                    <span class="vban-list-header">Stream Name</span>
+                    <span class="vban-list-header">Sender IP</span>
+                    <span class="vban-list-header">Port</span>
+                    <span class="vban-list-header">Samplerate</span>
+                    <span class="vban-list-header">Channels</span>
+                    <span class="vban-list-header">Format</span>
+                    <span class="vban-list-header">Network Quality</span>
+                    <span class="vban-list-header">Destination</span>
+                </div>
+            </div>
+            <div class="settings-view-content" id="settings-vban-outgoing">
+                <span class="settings-view-subheader">
+                    <material-symbol class="settings-view-icon">call_made</material-symbol>
+                    <span class="settings-view-title">Outgoing Streams</span>
+                </span>
+                
+                <div class="vban-list" id="vban-outgoing-list">
+                    <!-- Header -->
+                    <span class="vban-list-header">Enabled</span>
+                    <span class="vban-list-header">Stream Name</span>
+                    <span class="vban-list-header">Target IP</span>
+                    <span class="vban-list-header">Port</span>
+                    <span class="vban-list-header">Samplerate</span>
+                    <span class="vban-list-header">Channels</span>
+                    <span class="vban-list-header">Format</span>
+                    <span class="vban-list-header">Network Quality</span>
+                    <span class="vban-list-header">Source</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="templates" style="display: none;">
+        <div id="template-vban-incoming">
+            <span class="details-button blue vban-list-enabled">
+                <span class="button-label"><material-symbol>close</material-symbol></span>
+            </span>
+            <input type="text" name="stream-name" placeholder="Stream Name" class="settings-input vban-list-name">
+            <input type="text" name="sender-ip" placeholder="Sender IP" class="settings-input vban-list-ip">
+            <input type="number" name="port" placeholder="Port" class="settings-input vban-list-port" min="1024" max="65535">
+            <span class="settings-value vban-list-samplerate">48kHz</span>
+            <span class="settings-value vban-list-channels">2</span>
+            <span class="settings-value vban-list-format">16 Bit</span>
+            <select name="quality" class="settings-input vban-list-quality">
+                <option value="0">Optimal</option>
+                <option value="1">Fast</option>
+                <option value="2">Medium</option>
+                <option value="3">Slow</option>
+                <option value="4">Very Slow</option>
+            </select>
+            <select name="routing" class="settings-input red vban-list-route">
+                <option value="0">Input 1</option>
+                <option value="1">Input 2</option>
+                <option value="2">Input 3</option>
+                <option value="3">Input 4</option>
+                <option value="4">Input 5</option>
+                <option value="5">Input 6</option>
+                <option value="6">Input 7</option>
+                <option value="7">Input 8</option>
+            </select>
+        </div>
+        <div id="template-vban-outgoing">
+            <span class="details-button blue vban-list-enabled">
+                <span class="button-label"><material-symbol>close</material-symbol></span>
+            </span>
+            <input type="text" name="stream-name" placeholder="Stream Name" class="settings-input vban-list-name">
+            <input type="text" name="target-ip" placeholder="Target IP" class="settings-input vban-list-ip">
+            <input type="text" name="port" placeholder="Port" class="settings-input vban-list-port">
+            <select name="samplerate" class="settings-input vban-list-samplerate">
+                <option value="11025">11025 Hz</option>
+                <option value="16000">16000 Hz</option>
+                <option value="22050">22050 Hz</option>
+                <option value="24000">24000 Hz</option>
+                <option value="32000">32000 Hz</option>
+                <option value="44100">44100 Hz</option>
+                <option value="48000">48000 Hz</option>
+                <option value="64000">64000 Hz</option>
+                <option value="88200">88200 Hz</option>
+                <option value="96000">96000 Hz</option>
+            </select>
+            <select name="channel" class="settings-input vban-list-channels">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+            </select>
+            <select name="format" class="settings-input vban-list-format">
+                <option value="16">16 Bit</option>
+                <option value="24">24 Bit</option>
+            </select>
+            <select name="quality" class="settings-input vban-list-quality">
+                <option value="0">Optimal</option>
+                <option value="1">Fast</option>
+                <option value="2">Medium</option>
+                <option value="3">Slow</option>
+                <option value="4">Very Slow</option>
+            </select>
+            <select name="routing" class="settings-input red vban-list-route">
+                <option value="0">Output 1</option>
+                <option value="1">Output 2</option>
+                <option value="2">Output 3</option>
+                <option value="3">Output 4</option>
+                <option value="4">Output 5</option>
+                <option value="5">Output 6</option>
+                <option value="6">Output 7</option>
+                <option value="7">Output 8</option>
+            </select>
         </div>
     </div>
 </body>

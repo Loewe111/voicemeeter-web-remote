@@ -3,6 +3,10 @@ var ws;
 var inputChannels = []; // "strips"
 var outputChannels = []; // "busses"
 var detailsChannel = null;
+var vbanOptions = {
+    incoming: [],
+    outgoing: []
+};
 
 const defaultStrip = new VMStrip();
 const defaultBus = new VMBus();
@@ -701,8 +705,209 @@ function closeDetailsView() {
     view.hide();
 }
 
-function test() {
-    createDetailsView(inputChannels[2]);
+function initVbanOptions() {
+    vbanOptions = {
+        incomingElements: [],
+        outgoingElements: [],
+        incomingStreams: [],
+        outgoingStreams: []
+    }
+    // incoming
+    let incomingStreams = $('#vban-incoming-list');
+    incomingStreams.find(':not(.vban-list-header)').remove();
+    let templateHTML = $('#template-vban-incoming').html();
+    for (let i = 0; i < 8; i++) {
+        incomingStreams.append(templateHTML);
+        let elements = {
+            enabled: incomingStreams.find('.vban-list-enabled').eq(i),
+            name: incomingStreams.find('.vban-list-name').eq(i),
+            ip: incomingStreams.find('.vban-list-ip').eq(i),
+            port: incomingStreams.find('.vban-list-port').eq(i),
+            samplerate: incomingStreams.find('.vban-list-samplerate').eq(i),
+            channels: incomingStreams.find('.vban-list-channels').eq(i),
+            format: incomingStreams.find('.vban-list-format').eq(i),
+            quality: incomingStreams.find('.vban-list-quality').eq(i),
+            route: incomingStreams.find('.vban-list-route').eq(i)
+        };
+
+        elements.enabled.on('click', function() {
+            elements.enabled.toggleClass('on');
+            if (elements.enabled.hasClass('on')) {
+                elements.enabled.find('.button-label material-symbol').text('check');
+            } else {
+                elements.enabled.find('.button-label material-symbol').text('close');
+            }
+            vbanOptions.incomingStreams[i].enabled = elements.enabled.hasClass('on');
+            vbanOptionsChanged(true, i);
+        });
+
+        elements.name.on('change', function() {
+            vbanOptions.incomingStreams[i].name = elements.name.val();
+            vbanOptionsChanged(true, i);
+        });
+
+        elements.ip.on('change', function() {
+            vbanOptions.incomingStreams[i].ip = elements.ip.val();
+            vbanOptionsChanged(true, i);
+        });
+
+        elements.port.on('change', function() {
+            vbanOptions.incomingStreams[i].port = parseInt(elements.port.val());
+            vbanOptionsChanged(true, i);
+        });
+
+        elements.quality.on('change', function() {
+            vbanOptions.incomingStreams[i].quality = parseInt(elements.quality.val());
+            vbanOptionsChanged(true, i);
+        });
+
+        elements.route.on('change', function() {
+            vbanOptions.incomingStreams[i].route = parseInt(elements.route.val());
+            vbanOptionsChanged(true, i);
+        });
+
+        vbanOptions.incomingElements.push(elements);
+        vbanOptions.incomingStreams.push(new VBANStream());
+    }
+    // outgoing
+    let outgoingStreams = $('#vban-outgoing-list');
+    outgoingStreams.find(':not(.vban-list-header)').remove();
+    templateHTML = $('#template-vban-outgoing').html();
+    for (let i = 0; i < 8; i++) {
+        outgoingStreams.append(templateHTML);
+        let elements = {
+            enabled: outgoingStreams.find('.vban-list-enabled').eq(i),
+            name: outgoingStreams.find('.vban-list-name').eq(i),
+            ip: outgoingStreams.find('.vban-list-ip').eq(i),
+            port: outgoingStreams.find('.vban-list-port').eq(i),
+            samplerate: outgoingStreams.find('.vban-list-samplerate').eq(i),
+            channels: outgoingStreams.find('.vban-list-channels').eq(i),
+            format: outgoingStreams.find('.vban-list-format').eq(i),
+            quality: outgoingStreams.find('.vban-list-quality').eq(i),
+            route: outgoingStreams.find('.vban-list-route').eq(i)
+        };
+
+        elements.enabled.on('click', function() {
+            elements.enabled.toggleClass('on');
+            if (elements.enabled.hasClass('on')) {
+                elements.enabled.find('.button-label material-symbol').text('check');
+            } else {
+                elements.enabled.find('.button-label material-symbol').text('close');
+            }
+            vbanOptions.outgoingStreams[i].enabled = elements.enabled.hasClass('on');
+            vbanOptionsChanged(false, i);
+        });
+
+        elements.name.on('change', function() {
+            vbanOptions.outgoingStreams[i].name = elements.name.val();
+            vbanOptionsChanged(false, i);
+        });
+
+        elements.ip.on('change', function() {
+            vbanOptions.outgoingStreams[i].ip = elements.ip.val();
+            vbanOptionsChanged(false, i);
+        });
+
+        elements.port.on('change', function() {
+            vbanOptions.outgoingStreams[i].port = elements.port.val();
+            vbanOptionsChanged(false, i);
+        });
+
+        elements.samplerate.on('change', function() {
+            vbanOptions.outgoingStreams[i].samplerate = parseInt(elements.samplerate.val());
+            vbanOptionsChanged(false, i);
+        });
+
+        elements.channels.on('change', function() {
+            vbanOptions.outgoingStreams[i].channels = parseInt(elements.channels.val());
+            vbanOptionsChanged(false, i);
+        });
+
+        elements.format.on('change', function() {
+            vbanOptions.outgoingStreams[i].format = parseInt(elements.format.val());
+            vbanOptionsChanged(false, i);
+        });
+
+        elements.quality.on('change', function() {
+            vbanOptions.outgoingStreams[i].quality = parseInt(elements.quality.val());
+            vbanOptionsChanged(false, i);
+        });
+
+        elements.route.on('change', function() {
+            vbanOptions.outgoingStreams[i].route = parseInt(elements.route.val());
+            vbanOptionsChanged(false, i);
+        });
+
+        vbanOptions.outgoingElements.push(elements);
+        vbanOptions.outgoingStreams.push(new VBANStream());
+    }
+}
+
+function updateVbanOptions(data) {
+    for (let i = 0; i < data.incoming.length; i++) {
+        vbanOptions.incomingStreams[i].fromObject(data.incoming[i]);
+    }
+    for (let i = 0; i < data.outgoing.length; i++) {
+        vbanOptions.outgoingStreams[i].fromObject(data.outgoing[i]);
+    }
+
+    vbanOptions.incomingStreams.forEach((stream, index) => {
+        let elements = vbanOptions.incomingElements[index];
+        elements.enabled.toggleClass('on', stream.enabled);
+        elements.enabled.find('.button-label material-symbol').text(stream.enabled ? 'check' : 'close');
+        elements.name.val(stream.name);
+        elements.ip.val(stream.ip);
+        elements.port.val(stream.port);
+        elements.samplerate.text(`${stream.samplerate} Hz`);
+        elements.channels.text(stream.channels);
+        elements.format.text(`${stream.format} Bit`);
+        elements.quality.val(stream.quality);
+        elements.route.val(stream.route);
+
+        elements.route.find('option').each(function( index ) {
+            if (inputChannels[index].strip.label) {
+                $(this).text(`Input ${index + 1} (${inputChannels[index].strip.label})`);
+            } else {
+                $(this).text(`Input ${index + 1}`);
+            }
+        });
+    });
+    vbanOptions.outgoingStreams.forEach((stream, index) => {
+        let elements = vbanOptions.outgoingElements[index];
+        elements.enabled.toggleClass('on', stream.enabled);
+        elements.enabled.find('.button-label material-symbol').text(stream.enabled ? 'check' : 'close');
+        elements.name.val(stream.name);
+        elements.ip.val(stream.ip);
+        elements.port.val(stream.port);
+        elements.samplerate.val(stream.samplerate);
+        elements.channels.val(stream.channels);
+        elements.format.val(stream.format);
+        elements.quality.val(stream.quality);
+        elements.route.val(stream.route);
+
+        elements.route.find('option').each(function( index ) {
+            if (outputChannels[index].bus.label) {
+                $(this).text(`Output ${index + 1} (${outputChannels[index].bus.label})`);
+            } else {
+                $(this).text(`Output ${index + 1}`);
+            }
+        });
+    });
+}
+
+function vbanOptionsChanged(incoming, index) {
+    console.log('VBAN options changed:', incoming, index);
+    let message = {
+        type: 'vban',
+        direction: incoming ? 'incoming' : 'outgoing',
+        index: index,
+        values: vbanOptions[incoming ? 'incomingStreams' : 'outgoingStreams'][index].asObject()
+    };
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify(message));
+    } else {
+        console.warn('WebSocket is not open. Cannot send VBAN options.');
+    }
 }
 
 function updateBusses(busses) {
@@ -857,6 +1062,10 @@ function connectWebSocket() {
             updateStrips(data.strips);
             console.log('Received strips:', data.strips);
         }
+        if (data.vban) {
+            console.log('Received VBAN options:', data.vban);
+            updateVbanOptions(data.vban);
+        }
         // console.log('Received data:', data);
     };
 
@@ -881,23 +1090,31 @@ function sendWebSocket(message) {
     }
 }
 
+function switchToView(id) {
+    $('#views .header-view').removeClass('active');
+    $(`#views .header-view#${id}`).addClass('active');
+    if (detailsChannel) {
+        closeDetailsView();
+    }
+    $('#channel-view').toggle(id !== 'view-settings');
+    $('#channel-view-group-inputs').toggle(id !== 'view-outputs');
+    $('#channel-view-group-outputs').toggle(id !== 'view-inputs');
+    $('#settings-view').toggle(id === 'view-settings');
+    if(id !== 'view-settings') {
+        localStorage.setItem('channelView', id);
+    }
+}
+
 function init() {
     connectWebSocket();
     if (!wsTaskInterval) {
         wsTaskInterval = setInterval(websocketTask, 5000);
     }
 
-    function setView(view) {
-        localStorage.setItem('channelView', view);
-        $('#views .header-view').removeClass('active');
-        $('#view-' + view).addClass('active');
-        $('#channel-view-group-inputs').toggle(view !== 'outputs');
-        $('#channel-view-group-outputs').toggle(view !== 'inputs');
-    }
-    $('#view-all, #view-inputs, #view-outputs').click(function() {
-        setView(this.id.replace('view-', ''));
+    $('#view-all, #view-inputs, #view-outputs, #view-settings').click(function() {
+        switchToView(this.id)
     });
-    setView(localStorage.getItem('channelView') || 'all');
+    switchToView(localStorage.getItem('channelView') || 'view-all');
 
     $('#details-back-button').click(function() {
         closeDetailsView();
@@ -906,6 +1123,8 @@ function init() {
     $(window).resize(function() {
         detailsViewRerender();
     });
+
+    initVbanOptions();
 }
 
 $(document).ready(function() {

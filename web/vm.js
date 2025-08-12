@@ -186,3 +186,43 @@ class VMBus {
         };
     }
 }
+
+class VBANStream {
+    enabled = false;
+    name = '';
+    ip = '';
+    port = 6980;
+    samplerate = 48000;
+    channels = 2;
+    format = 16;
+    quality = 0;
+    route = 0;
+
+    fromObject(object) {
+        this.enabled = object.enabled;
+        this.name = object.name;
+        this.ip = object.ip;
+        this.port = object.port;
+        this.samplerate = object.samplerate;
+        this.channels = object.channels;
+        this.format = object.format;
+        this.quality = object.quality;
+        this.destination = object.destination;
+        this.route = object.route;
+    }
+
+    asObject() {
+        return {
+            enabled: this.enabled,
+            name: this.name,
+            ip: this.ip,
+            port: this.port,
+            samplerate: this.samplerate,
+            channels: this.channels,
+            format: this.format,
+            quality: this.quality,
+            destination: this.destination,
+            route: this.route
+        };
+    }
+}
