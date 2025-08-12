@@ -1,12 +1,12 @@
 import os
 import sys
-import voicemeeterlib
 import tomllib
 import aiohttp
 from aiohttp import web
 import asyncio
 import logging
 from log import LogFormatter
+# from voicemeeterlib.error import InstallError
 
 vm = None
 
@@ -18,6 +18,13 @@ stream_handler.setFormatter(LogFormatter())
 log = logging.getLogger("main")
 logging.basicConfig(level=logging.INFO, handlers=[stream_handler])
 log.setLevel(logging.DEBUG)
+
+try:
+    import voicemeeterlib
+except Exception as e:
+    log.error(f"Voicemeeter installation error: {e}")
+    log.error("Please ensure Voicemeeter is installed.")
+    exit(1)
 
 if getattr(sys, 'frozen', False):
     FILE_DIR = sys._MEIPASS
