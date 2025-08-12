@@ -12,6 +12,7 @@ jobs:
         with:
           spec: 'main.spec'
           requirements: 'requirements.txt'
+          python_ver: 3.12.4
       - name: Upload Files
         uses: actions/upload-artifact@v4
         with:
