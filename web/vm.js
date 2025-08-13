@@ -70,6 +70,9 @@ class VMStrip {
         fx: true,
     };
 
+    device = null;
+    device_rate = null;
+
     fromObject(object) {
         this.isPhysical = object.isPhysical || false;
         this.mono = object.mono;
@@ -80,6 +83,8 @@ class VMStrip {
         this.pan = object.pan || 0;
         this.limit = object.limit || 0;
         this.denoiser = object.denoiser || 0;
+        this.device = object.device || null;
+        this.device_rate = object.device_rate || null;
 
         if (object.isPhysical) {
             this.eq = object.eq || this.eq;
@@ -164,6 +169,9 @@ class VMBus {
         fx: true,
     };
 
+    device = null;
+    device_rate = null;
+
     fromObject(object) {
         this.mono = object.mono;
         this.mute = object.mute;
@@ -172,6 +180,9 @@ class VMBus {
         this.label = object.label;
         this.eq = object.eq || this.eq;
         this.fx = object.fx || this.fx;
+        this.device = object.device || null;
+        this.device_rate = object.device_rate || null;
+        this.isPhysical = object.isPhysical || false;
     }
 
     asObject() {

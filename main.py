@@ -152,6 +152,7 @@ async def send_busses(ws):
         }
         for bus in vm.bus:
             bus_data = {
+                "isPhysical": getattr(bus, 'device', None) is not None,
                 "label": bus.label,
                 "mono": bus.mono,
                 "mute": bus.mute,
@@ -159,6 +160,8 @@ async def send_busses(ws):
                 "gain": bus.gain,
                 "eq": serialize_eq(bus.eq),
                 "fx": [getattr(bus, output, False) for output in OUTPUT_EFFECT_NAMES],
+                "device": bus.device.name if getattr(bus, 'device', None) else None,
+                "device_rate": bus.device.sr if getattr(bus, 'device', None) else None
             }
             message["busses"].append(bus_data)
         await ws.send_json(message)
@@ -183,6 +186,8 @@ async def send_strips(ws):
                 "denoiser": hasattr(strip, 'denoiser') and strip.denoiser.knob or 0,
                 "routing": [getattr(strip, output, False) for output in OUTPUT_CHANNEL_NAMES],
                 "fx": [getattr(strip, input, False) for input in INPUT_EFFECT_NAMES],
+                "device": strip.device.name if getattr(strip, 'device', None) else None,
+                "device_rate": strip.device.sr if getattr(strip, 'device', None) else None
             }
             if hasattr(strip, 'eq'):
                 strip_data.update({
@@ -228,6 +233,7 @@ async def send_strips(ws):
 async def rec_busses(ws, data):
     try:
         bus = vm.bus[data['index']]
+        bus.label = data['values'].get('label', bus.label)
         bus.mute = data['values'].get('mute', bus.mute)
         bus.gain = data['values'].get('gain', bus.gain)
         bus.sel = data['values'].get('sel', bus.sel)
@@ -245,6 +251,7 @@ async def rec_busses(ws, data):
 async def rec_strips(ws, data):
     try:
         strip = vm.strip[data['index']]
+        strip.label = data['values'].get('label', strip.label)
         strip.mute = data['values'].get('mute', strip.mute)
         strip.mono = data['values'].get('mono', strip.mono)
         strip.solo = data['values'].get('solo', strip.solo)
@@ -292,6 +299,22 @@ async def rec_strips(ws, data):
     except Exception as e:
         log.error(f"Error updating strip: {e}")
 
+async def set_device(ws, data):
+    try:
+        channel = None
+        if data['channel_type'] == 'input':
+            channel = vm.strip[data['channel_index']]
+        else:
+            channel = vm.bus[data['channel_index']]
+        if data['device_type'] == 'wdm':
+            channel.device.wdm = data['device_name']
+        elif data['device_type'] == 'ks':
+            channel.device.ks = data['device_name']
+        elif data['device_type'] == 'mme':
+            channel.device.mme = data['device_name']
+    except Exception as e:
+        log.error(f"Error setting device: {e}")
+
 async def parameter_poller(ws, session):
     while not ws.closed:
         await dirty_check()
@@ -324,9 +347,14 @@ async def init_message(ws):
     # Send initial message to client
     await ws.send_json({
         "setup": {
-            "kind": CONFIG['voicemeeter']['kind'],
+            "version": vm.version,
+            "type": vm.type,
             "inputs": len(vm.strip),
             "outputs": len(vm.bus),
+            "devices": {
+                "input": [vm.device.input(i) for i in range(vm.device.ins)],
+                "output": [vm.device.output(i) for i in range(vm.device.outs)]
+            }
         }
     })
 
@@ -351,6 +379,7 @@ async def websocket_handler(request):
                     await send_busses(ws)
                     await send_strips(ws)
                     await send_vban(ws)
+                    await init_message(ws)
                 elif data.get("type") == "bus":
                     await rec_busses(ws, data)
                     session["ignoreUpdate"] = True
@@ -360,16 +389,22 @@ async def websocket_handler(request):
                 elif data.get("type") == "vban":
                     await rec_vban(ws, data)
                     session["ignoreUpdate"] = True
+                elif data.get("type") == "action":
+                    if data.get("action") == "restart-audio-engine":
+                        vm.command.restart()
+                elif data.get("type") == "device":
+                    await set_device(ws, data)
             elif msg.type == aiohttp.WSMsgType.ERROR:
                 log.error(f"WS Error: {ws.exception}")
     finally:
+        log.info("Websocket disconnected")
+        sessions.remove(session)
+
         parameter_polling_task.cancel()
         level_polling_task and level_polling_task.cancel()
         await parameter_polling_task
         await level_polling_task
 
-    log.info("Websocket disconnected")
-    sessions.remove(session)
     return ws
 
 async def index(request):

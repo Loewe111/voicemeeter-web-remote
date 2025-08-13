@@ -7,6 +7,15 @@ var vbanOptions = {
     incoming: [],
     outgoing: []
 };
+var deviceOptions = {
+    inputElements: [],
+    outputElements: []
+};
+
+var setup = {
+    version: null,
+    type: null
+};
 
 const defaultStrip = new VMStrip();
 const defaultBus = new VMBus();
@@ -910,6 +919,145 @@ function vbanOptionsChanged(incoming, index) {
     }
 }
 
+function initDevices() {
+    deviceOptions.inputElements = [];
+    deviceOptions.outputElements = [];
+
+    let templateHTML = $('#template-device-list-entry').html();
+    let inputsList = $('#device-inputs-list');
+    inputsList.find(':not(.device-list-header)').remove();
+    for (let i = 0; i < inputChannels.length; i++) {
+        let channel = inputChannels[i];
+        inputsList.append(templateHTML);
+        let elements = {
+            id: inputsList.find('.device-list-id').eq(i),
+            name: inputsList.find('.device-list-name').eq(i),
+            device: inputsList.find('.device-list-device').eq(i),
+            samplerate: inputsList.find('.device-list-samplerate').eq(i),
+            change: inputsList.find('.device-list-change').eq(i)
+        };
+        elements.id.text(`Input ${i + 1}`);
+        elements.name.on('change', function() {
+            channel.strip.label = $(this).val();
+            channelChanged(channel);
+        });
+        elements.name.attr('placeholder', `Input ${i + 1}`);
+        elements.change.click(function() {
+            openDeviceSelector(channel, 'input');
+        });
+
+        deviceOptions.inputElements.push(elements);
+    }
+
+    let outputsList = $('#device-outputs-list');
+    outputsList.find(':not(.device-list-header)').remove();
+    for (let i = 0; i < outputChannels.length; i++) {
+        let channel = outputChannels[i];
+        outputsList.append(templateHTML);
+        let elements = {
+            id: outputsList.find('.device-list-id').eq(i),
+            name: outputsList.find('.device-list-name').eq(i),
+            device: outputsList.find('.device-list-device').eq(i),
+            samplerate: outputsList.find('.device-list-samplerate').eq(i),
+            change: outputsList.find('.device-list-change').eq(i)
+        };
+        elements.id.text(`Output ${i + 1}`);
+        elements.name.on('change', function() {
+            channel.bus.label = $(this).val();
+            channelChanged(channel);
+        });
+        elements.name.attr('placeholder', `Output ${i + 1}`);
+        elements.change.click(function() {
+            openDeviceSelector(channel, 'output');
+        });
+
+        deviceOptions.outputElements.push(elements);
+    }
+}
+
+function updateDevices() {
+    inputChannels.forEach((channel, index) => {
+        let elements = deviceOptions.inputElements[index];
+        elements.name.val(channel.strip.label || '');
+        elements.samplerate.text(channel.strip.device_rate ? `${channel.strip.device_rate} Hz` : '');
+        if (channel.strip.isPhysical) {
+            elements.device.text(channel.strip.device || '');
+            elements.change.css('visibility', '');
+        } else {
+            elements.device.text('VAIO Virtual Input');
+            elements.change.css('visibility', 'hidden');
+        }
+    });
+    outputChannels.forEach((channel, index) => {
+        let elements = deviceOptions.outputElements[index];
+        elements.name.val(channel.bus.label || '');
+        elements.samplerate.text(channel.bus.device_rate ? `${channel.bus.device_rate} Hz` : '');
+        if (channel.bus.isPhysical) {
+            elements.device.text(channel.bus.device || '');
+            elements.change.css('visibility', '');
+        } else {
+            elements.device.text('VAIO Virtual Output');
+            elements.change.css('visibility', 'hidden');
+        }
+    });
+}
+
+function openDeviceSelector(channel, type = "input") {
+    $('#device-selector').show();
+    $('#device-selector-list > :not(.device-list-header)').remove();
+    let templateHTML = $('#template-device-selector-device').html();
+    // Add Remove Device Selection option
+    $('#device-selector-list').append(templateHTML);
+    let deviceElement = $('#device-selector-list').children().last();
+    deviceElement.find('.device-name').text('Remove Device Selection');
+    deviceElement.click(function() {
+        $(`#device-selector`).hide();
+        selectDevice(channel, 'wdm', '');
+    });
+    // Add option for each device
+    setup.devices[type].forEach(element => {
+        if(element.type.toLowerCase() == 'asio') return;
+        $('#device-selector-list').append(templateHTML);
+        let deviceElement = $('#device-selector-list').children().last();
+        deviceElement.find('.device-type').text(element.type.toUpperCase());
+        deviceElement.find('.device-name').text(element.name);
+        deviceElement.attr('title', element.id);
+        deviceElement.click(function() {
+            $(`#device-selector`).hide();
+            selectDevice(channel, element.type, element.name);
+        });
+    });
+    let channelName;
+    if (type === "input") {
+        channelName = channel.strip.label || `Input ${inputChannels.indexOf(channel) + 1}`;
+    } else {
+        channelName = channel.bus.label || `Output ${outputChannels.indexOf(channel) + 1}`;
+    }
+    $('#device-selector-title').text(channelName);
+    $('#device-selector-close').click(closeDeviceSelector);
+}
+
+function closeDeviceSelector() {
+    $('#device-selector').hide();
+}
+
+function selectDevice(channel, device_type, device_name) {
+    sendWebSocket({
+        type: 'device',
+        channel_type: channel.type,
+        channel_index: channel.type === 'input' ? inputChannels.indexOf(channel) : outputChannels.indexOf(channel),
+        device_type: device_type,
+        device_name: device_name
+    });
+}
+
+function updateSetup(data) {
+    setup = data;
+    $('.vm-info-version').text(setup.version);
+    $('.vm-info-type').text(setup.type);
+    $('.vm-info-version-string').text(`Voicemeeter ${setup.type} ${setup.version}`.toUpperCase());
+}
+
 function updateBusses(busses) {
     busses.forEach((bus, index) => {
         let channel = outputChannels[index];
@@ -1049,6 +1197,8 @@ function connectWebSocket() {
 
         if (data.setup) {
             createChannels(data.setup.inputs, data.setup.outputs);
+            updateSetup(data.setup);
+            initDevices();
             console.log('Received setup:', data.setup);
         }
         if (data.levels) {
@@ -1056,15 +1206,17 @@ function connectWebSocket() {
         }
         if (data.busses) {
             updateBusses(data.busses);
+            updateDevices();
             console.log('Received busses:', data.busses);
         }
         if (data.strips) {
             updateStrips(data.strips);
+            updateDevices();
             console.log('Received strips:', data.strips);
         }
         if (data.vban) {
-            console.log('Received VBAN options:', data.vban);
             updateVbanOptions(data.vban);
+            console.log('Received VBAN options:', data.vban);
         }
         // console.log('Received data:', data);
     };
@@ -1105,10 +1257,17 @@ function switchToView(id) {
     }
 }
 
+function switchToSettingsGroup(id) {
+    $('.settings-nav-item').removeClass('active');
+    $(`.settings-nav-item#${id}`).addClass('active');
+    $('.settings-view-group').hide();
+    $(`#group-${id}`).show();
+}
+
 function init() {
     connectWebSocket();
     if (!wsTaskInterval) {
-        wsTaskInterval = setInterval(websocketTask, 5000);
+        wsTaskInterval = setInterval(websocketTask, 15000);
     }
 
     $('#view-all, #view-inputs, #view-outputs, #view-settings').click(function() {
@@ -1119,6 +1278,14 @@ function init() {
     $('#details-back-button').click(function() {
         closeDetailsView();
     });
+
+    $('#settings-restart-audio-engine').click(function() {
+        sendWebSocket({ type: 'action', action: 'restart-audio-engine' });
+    });
+    $('#settings-general, #settings-vban, #settings-devices').click(function() {
+        switchToSettingsGroup(this.id);
+    });
+    switchToSettingsGroup('settings-general');
 
     $(window).resize(function() {
         detailsViewRerender();

@@ -534,7 +534,7 @@ material-symbol {
     border: 2px solid var(--primary);
     border-radius: 2px;
 
-    padding: 0.25rem;
+    padding: 0.25rem 0.5rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -717,13 +717,12 @@ material-symbol {
     color: var(--text);
     border: 2px solid var(--primary);
     border-radius: 2px;
-    padding: 0.25rem;
+    padding: 0.25rem 0.5rem;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.25rem;
     user-select: none;
-    cursor: pointer;
 
     min-width: 2rem;
     width: 100%;
@@ -746,6 +745,27 @@ material-symbol {
     border: 2px solid #fff2;
     border-radius: 2px;
     min-width: 2rem;
+    height: 2rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.settings-settings {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.5rem;
+}
+
+.settings-setting {
+    display: flex;
+    align-items: center;
+    justify-content: right;
+    border-bottom: 1px solid var(--border);
+    gap: 0.5rem;
+}
+
+.settings-setting > :first-child {
+    flex: 1;
 }
 
 .vban-list {
@@ -763,4 +783,88 @@ material-symbol {
 
     gap: 0.5rem;
     padding: 0.5rem;
+}
+
+.device-list {
+    display: grid;
+    grid-template-columns: 
+        1fr /* ID */
+        5fr /* Name */
+        5fr /* Device */
+        2fr /* Samplerate */
+        2fr /* Options */
+    ;
+
+    gap: 0.5rem;
+    padding: 0.5rem;
+}
+
+/* Modals */
+
+.modal-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #0008;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal {
+    background: var(--background);
+    color: var(--text);
+    padding: 1rem;
+    border-radius: 2px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    max-width: 90%;
+    max-height: 90%;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.modal-title {
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+#device-selector-list {
+    /* min-width: min(20rem, 80vh); */
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+#device-selector-list > div {
+    display: grid;
+    grid-template-columns: 2fr 15fr;
+    gap: 0.5rem;
+    overflow-y: auto;
+    
+    font-family: var(--font-text);
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--text);
+    align-items: center;
+    justify-content: center;
+    padding: 0.25rem 0.5rem;
+}
+
+#device-selector-list .device-list-header {
+    font-size: 0.75rem;
+}
+
+#device-selector-list .device {
+    border: 2px solid #fff2;
+    border-radius: 2px;
+    cursor: pointer;
+}
+
+#device-selector-list .device:hover {
+    background: #fff2;
 }

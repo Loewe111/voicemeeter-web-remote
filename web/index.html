@@ -88,10 +88,32 @@
     </div>
     <div class="settings-view" id="settings-view" style="display: none;">
         <div class="settings-nav-sidebar">
-            <span class="settings-nav-item" id="settings-nav-item-vban">VBAN</span>
-            <span class="settings-nav-item" id="settings-nav-item-devices">Devices</span>
+            <span class="settings-nav-item" id="settings-general">General</span>
+            <span class="settings-nav-item" id="settings-vban">VBAN</span>
+            <span class="settings-nav-item" id="settings-devices">Devices</span>
         </div>
-        <div class="settings-view-group" id="settings-vban">
+        <div class="settings-view-group" id="group-settings-general">
+            <span class="settings-view-header">
+                <material-symbol class="settings-view-icon">settings</material-symbol>
+                <span class="settings-view-title">General</span>
+            </span>
+            <div class="settings-view-content">
+                <div class="settings-settings">
+                    <div class="settings-setting">
+                        <span class="settings-label">Voicemeeter Version</span>
+                        <span class="settings-value vm-info-version-string">Unknown</span>
+                    </div>
+                    <div class="settings-setting">
+                        <span class="settings-label">Actions</span>
+                        <span class="details-button red" id="settings-restart-audio-engine">
+                            <material-symbol class="button-icon">restart_alt</material-symbol>
+                            <span class="button-label">Restart Audio Engine</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="settings-view-group" id="group-settings-vban" style="display: none;">
             <span class="settings-view-header">
                 <material-symbol class="settings-view-icon">lan</material-symbol>
                 <span class="settings-view-title">VBAN</span>
@@ -132,6 +154,61 @@
                     <span class="vban-list-header">Network Quality</span>
                     <span class="vban-list-header">Source</span>
                 </div>
+            </div>
+        </div>
+        <div class="settings-view-group" id="group-settings-devices" style="display: none;">
+            <span class="settings-view-header">
+                <material-symbol class="settings-view-icon">settings_input_component</material-symbol>
+                <span class="settings-view-title">Devices & Channels</span>
+            </span>
+            <div class="settings-view-content" id="settings-vban-outgoing">
+                <span class="settings-view-subheader">
+                    <material-symbol class="settings-view-icon">input</material-symbol>
+                    <span class="settings-view-title">Inputs</span>
+                </span>
+                <div class="device-list" id="device-inputs-list">
+                    <!-- Header -->
+                    <span class="device-list-header">Channel</span>
+                    <span class="device-list-header">Channel Name</span>
+                    <span class="device-list-header">Device</span>
+                    <span class="device-list-header">Samplerate</span>
+                    <span class="device-list-header">Options</span>
+                </div>
+            </div>
+            <div class="settings-view-content" id="settings-vban-outgoing">
+                <span class="settings-view-subheader">
+                    <material-symbol class="settings-view-icon">output</material-symbol>
+                    <span class="settings-view-title">Outputs</span>
+                </span>
+                <div class="device-list" id="device-outputs-list">
+                    <!-- Header -->
+                    <span class="device-list-header">Channel</span>
+                    <span class="device-list-header">Channel Name</span>
+                    <span class="device-list-header">Device</span>
+                    <span class="device-list-header">Samplerate</span>
+                    <span class="device-list-header">Options</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-container" id="device-selector" style="display: none;">
+        <div class="modal">
+            <span class="modal-title">Select Audio Device for <span id="device-selector-title"></span></span>
+            <div id="device-selector-list">
+                <div class="device-list-header">
+                    <span>Type</span>
+                    <span>Name</span>
+                </div>
+                <div class="device">
+                    <span class="device-type">KS</span>
+                    <span class="device-name">Anlage (High Definition Audio Device)</span>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <span class="details-button red" id="device-selector-close">
+                    <material-symbol class="button-icon">close</material-symbol>
+                    <span class="button-label">Cancel</span>
+                </span>
             </div>
         </div>
     </div>
@@ -214,6 +291,22 @@
                 <option value="6">Output 7</option>
                 <option value="7">Output 8</option>
             </select>
+        </div>
+        <div id="template-device-list-entry">
+            <span class="settings-value device-list-id"></span>
+            <input type="text" class="settings-input device-list-name">
+            <span class="settings-value device-list-device"></span>
+            <span class="settings-value device-list-samplerate"></span>
+            <span class="details-button blue device-list-change">
+                <material-symbol class="button-icon">expand_content</material-symbol>
+                <span class="button-label">Change</span>
+            </span>
+        </div>
+        <div id="template-device-selector-device">
+            <div class="device">
+                <span class="device-type"></span>
+                <span class="device-name"></span>
+            </div>
         </div>
     </div>
 </body>
