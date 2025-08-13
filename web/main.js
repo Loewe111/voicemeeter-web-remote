@@ -982,7 +982,9 @@ function initDevices() {
 function updateDevices() {
     inputChannels.forEach((channel, index) => {
         let elements = deviceOptions.inputElements[index];
-        elements.name.val(channel.strip.label || '');
+        if (!elements.name.is(':focus')) {
+            elements.name.val(channel.strip.label || '');
+        }
         elements.samplerate.text(channel.strip.device_rate ? `${channel.strip.device_rate} Hz` : '');
         if (channel.strip.isPhysical) {
             elements.device.text(channel.strip.device || '');
@@ -994,7 +996,9 @@ function updateDevices() {
     });
     outputChannels.forEach((channel, index) => {
         let elements = deviceOptions.outputElements[index];
-        elements.name.val(channel.bus.label || '');
+        if (!elements.name.is(':focus')) {
+            elements.name.val(channel.bus.label || '');
+        }
         elements.samplerate.text(channel.bus.device_rate ? `${channel.bus.device_rate} Hz` : '');
         if (channel.bus.isPhysical) {
             elements.device.text(channel.bus.device || '');
