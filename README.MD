@@ -7,10 +7,16 @@ Allows you to control pretty much everything in Voicemeter from a web browser.
 
 ![Screenshot of the Detailed View](/images/screenshot_details.png)
 
+![Screenshot of the Device Settings](/images/screenshot_device_settings.png)
+
+![Screenshot of the VBAN Settings](/images/screenshot_vban_settings.png)
+
 ## Features
 - Control all Input and Output channels
 - Set Compressor, Gate, and EQ settings
 - Control Routing and Bus assignments
+- Change device assignment for each channel
+- Configure VBAN inputs and outputs
 
 ## Installation and Usage
 
@@ -36,3 +42,5 @@ Click at the close button on the top left of the detailed view to close it again
 Double-clicking on a slider or knob will reset it to its default value.
 
 Click and drag sliders and knobs to adjust their values. You can also use the scroll wheel to adjust sliders and knobs, holding the `Shift` key while scrolling will adjust the value in bigger steps.
+
+Right-clicking on a slider allows you to manually enter your desired value using your keyboard.
