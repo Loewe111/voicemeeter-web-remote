@@ -103,6 +103,8 @@ function createInputChannel() {
     });
 
     channel.inputs.gain = new Slider(createSlider(), {
+        label: 'GAIN',
+        hideLabel: true,
         min: -60,
         max: 10,
         step: 0.1,
@@ -178,6 +180,8 @@ function createOutputChannel() {
     });
 
     channel.inputs.gain = new Slider(createSlider(), {
+        label: 'GAIN',
+        hideLabel: true,
         min: -60,
         max: 10,
         step: 0.1,
@@ -391,7 +395,7 @@ function createDetailsView(channel) {
                 }
             });
             cell.freq = new Knob(createKnob('blue'), {
-                min: 20, max: 20000, step: 10, decimals: 0, unit: 'Hz', value: defaultStrip.eq.cells[i].freq, logarithmic: true,
+                label: `FREQ ${i + 1}`, hideLabel: true, min: 20, max: 20000, step: 10, decimals: 0, unit: 'Hz', value: defaultStrip.eq.cells[i].freq, logarithmic: true,
                 onChange: (value) => {
                     detailsChannel.wrapper.eq.cells[i].freq = value;
                     channelChanged(channel);
@@ -399,7 +403,7 @@ function createDetailsView(channel) {
                 }
             });
             cell.gain = new Knob(createKnob('blue'), {
-                min: -36, max: 18, step: 0.1, decimals: 1, unit: 'dB', value: defaultStrip.eq.cells[i].gain,
+                label: `GAIN ${i + 1}`, hideLabel: true, min: -36, max: 18, step: 0.1, decimals: 1, unit: 'dB', value: defaultStrip.eq.cells[i].gain,
                 onChange: (value) => {
                     detailsChannel.wrapper.eq.cells[i].gain = value;
                     channelChanged(channel);
@@ -407,7 +411,7 @@ function createDetailsView(channel) {
                 }
             });
             cell.q = new Knob(createKnob('blue'), {
-                min: 0.3, max: 100, step: 0.1, decimals: 1, value: defaultStrip.eq.cells[i].q,
+                label: `Q ${i + 1}`, hideLabel: true, min: 0.3, max: 100, step: 0.1, decimals: 1, value: defaultStrip.eq.cells[i].q,
                 onChange: (value) => {
                     detailsChannel.wrapper.eq.cells[i].q = value;
                     channelChanged(channel);
@@ -555,7 +559,7 @@ function createDetailsView(channel) {
             }
         });
         detailsChannel.options.gate.bpsidechain = new Knob(createKnob('blue'), {
-            label: `BPSIDECHAIN`, min: 100, max: 4000, step: 10, decimals: 0, unit: 'hz', value: defaultStrip.gate.bpsidechain, displayValues: {'100': 'OFF'},
+            label: `BPSIDECHAIN`, min: 100, max: 4000, step: 10, decimals: 0, unit: 'Hz', value: defaultStrip.gate.bpsidechain, displayValues: {'100': 'OFF'},
             onChange: (value) => {
                 channel.strip.gate.bpsidechain = value;
                 detailsViewRerender();

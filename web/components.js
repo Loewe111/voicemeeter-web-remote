@@ -14,6 +14,7 @@ class Knob {
         this.decimals = options.decimals || 0;
 
         this.label = options.label || '';
+        this.hideLabel = options.hideLabel || false;
         this.displayValues = options.displayValues || {};
 
         this.unit = options.unit || '';
@@ -44,9 +45,7 @@ class Knob {
         }
 
         this._elements.label.text(this.label);
-        if (this.label === '') {
-            this._elements.label.hide();
-        }
+        this._elements.label.toggle(!this.hideLabel);
 
         this._update();
 
@@ -59,6 +58,22 @@ class Knob {
         this.element.on('touchmove', (e) => this._dragMove(e));
         this.element.on('touchend', (e) => this._dragEnd(e));
         this.element.on('dblclick', (e) => this._reset(e));
+        this.element.on('contextmenu', (e) => this._rightClick(e));
+    }
+
+    _rightClick(event) {
+        if (this.disabled) return;
+        event.preventDefault();
+        this._showValueInput();
+    }
+
+    _showValueInput() {
+        valueModal(this.value, this.label, this.unit, this.min, this.max, this.step, this.decimals, (newValue) => {
+            newValue = parseFloat(newValue);
+            if (isNaN(newValue)) return;
+            this.setValue(newValue);
+            this.onchange(this.value);
+        });
     }
 
     _wheel(event) {
@@ -100,6 +115,9 @@ class Knob {
 
     _dragStart(event) {
         if (this.disabled) return;
+        // check if its right mouse button
+        if (event.originalEvent.button === 2) return;
+
         this._drag.startValue = this.value;
         this._drag.startX = this._eventPosition(event.originalEvent).x;
         this._drag.startY = this._eventPosition(event.originalEvent).y;
@@ -159,9 +177,7 @@ class Knob {
     }
 
     setValue(newValue) {
-        if (newValue < this.min || newValue > this.max) {
-            throw new Error(`Value must be between ${this.min} and ${this.max}`);
-        }
+        newValue = Math.max(this.min, Math.min(this.max, newValue));
         if (newValue % this.step !== 0) { // Make value a multiple of step
             newValue = Math.round(newValue / this.step) * this.step;
         }
@@ -197,6 +213,7 @@ class Slider {
 
         this.label = options.label || '';
         this.labels = options.labels || 0; // Number of labels to show
+        this.hideLabel = options.hideLabel || false;
 
         this.unit = options.unit || '';
         this.onchange = options.onChange || function() {};
@@ -230,13 +247,31 @@ class Slider {
         this._elements.knob.on('touchend', (e) => this._dragEnd(e));
         this.element.on('dblclick', (e) => this._reset(e));
         this._elements.range.on('click', (e) => this._rangeClick(e));
+        this.element.on('contextmenu', (e) => this._rightClick(e));
 
         this._elements.label.text(this.label);
+        this._elements.label.toggle(!this.hideLabel);
 
         this._elements.vuMeter.hide();
 
         this._createLabels();
         this._update();
+    }
+
+    _rightClick(event) {
+        if (this.disabled) return;
+        event.preventDefault();
+        this._showValueInput();
+    }
+
+    _showValueInput() {
+        if (this.disabled) return;
+
+        valueModal(this.value, this.label, this.unit, this.min, this.max, this.step, this.decimals, (newValue) => {
+            if (isNaN(newValue)) return;
+            this.setValue(newValue);
+            this.onchange(this.value);
+        });
     }
 
     _reset(event) {
@@ -284,6 +319,8 @@ class Slider {
     }
 
     _dragStart(event) {
+        if (event.originalEvent.button == 2) return;
+
         this._drag.startValue = this.value;
         this.element.addClass('dragging');
         this._drag.dragging = true;
@@ -348,9 +385,7 @@ class Slider {
     }
 
     setValue(newValue) {
-        if (newValue < this.min || newValue > this.max) {
-            throw new Error(`Value must be between ${this.min} and ${this.max}`);
-        }
+        newValue = Math.max(this.min, Math.min(this.max, newValue));
         if (newValue % this.step !== 0) { // Make value a multiple of step
             newValue = Math.round(newValue / this.step) * this.step;
         }
@@ -440,6 +475,33 @@ class Button {
             this.element.removeClass('hidden');
         }
     }
+}
+
+function valueModal(value, value_name, unit, min, max, step, decimals, onChange) {
+    $('#value-input-title').text(value_name);
+    $('#value-input-unit').text(unit);
+
+    $('#value-input-field').val(value.toFixed(decimals));
+    $('#value-input-field').attr('type', 'number');
+    $('#value-input-field').attr('min', min);
+    $('#value-input-field').attr('max', max);
+    $('#value-input-field').attr('step', step);
+
+    $('#value-input-close').one('click', function() {
+        $('#value-input').hide();
+        onChange($('#value-input-field').val());
+    });
+
+    $('#value-input').show();
+    $('#value-input-field').focus();
+    $('#value-input-field').select();
+    $('#value-input-field').on('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            $('#value-input-close').click();
+            $('#value-input-field').off('keydown');
+        }
+    });
 }
 
 // Creation Functions

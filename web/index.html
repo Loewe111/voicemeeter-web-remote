@@ -89,8 +89,8 @@
     <div class="settings-view" id="settings-view" style="display: none;">
         <div class="settings-nav-sidebar">
             <span class="settings-nav-item" id="settings-general">General</span>
-            <span class="settings-nav-item" id="settings-vban">VBAN</span>
             <span class="settings-nav-item" id="settings-devices">Devices</span>
+            <span class="settings-nav-item" id="settings-vban">VBAN</span>
         </div>
         <div class="settings-view-group" id="group-settings-general">
             <span class="settings-view-header">
@@ -212,6 +212,21 @@
             </div>
         </div>
     </div>
+    <div class="modal-container" id="value-input" style="display: none;">
+        <div class="modal">
+            <span class="modal-title"><span id="value-input-title"></span></span>
+            <div class="settings-input-with-unit">
+                <input type="text" id="value-input-field" placeholder="Enter value">
+                <span id="value-input-unit">dB</span>
+            </div>
+            <div class="modal-buttons">
+                <span class="details-button red" id="value-input-close">
+                    <material-symbol class="button-icon">check</material-symbol>
+                    <span class="button-label">OK</span>
+                </span>
+            </div>
+        </div>
+    </div>
     <div class="templates" style="display: none;">
         <div id="template-vban-incoming">
             <span class="details-button blue vban-list-enabled">
@@ -298,7 +313,7 @@
             <span class="settings-value device-list-device"></span>
             <span class="settings-value device-list-samplerate"></span>
             <span class="details-button blue device-list-change">
-                <material-symbol class="button-icon">expand_content</material-symbol>
+                <material-symbol class="button-icon">list</material-symbol>
                 <span class="button-label">Change</span>
             </span>
         </div>

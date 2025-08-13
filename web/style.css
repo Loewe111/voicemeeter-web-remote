@@ -330,7 +330,7 @@ material-symbol {
 
     z-index: 1;
 
-    background: url(/images/fader.png) no-repeat center center, linear-gradient(#fff, #333, #fff); 
+    background: url(/images/fader.png) no-repeat center center; 
     background-size: 100% 100%;
     border-radius: 2px;
     transform: translateY(-50%) translateX(-50%);
@@ -734,6 +734,39 @@ material-symbol {
     outline: none;
 }
 
+.settings-input-with-unit {
+    background: var(--background);
+    color: var(--text);
+    border: 2px solid var(--primary);
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    user-select: none;
+
+    min-width: 2rem;
+    height: 2rem;
+}
+
+.settings-input-with-unit input {
+    border: none;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    padding: 0.25rem 0.5rem;
+    margin: 0;
+    outline: none;
+    width: 100%;
+}
+
+.settings-input-with-unit span {
+    font-family: var(--font-text);
+    font-size: 0.75rem;
+    font-weight: 400;
+    padding: 0.25rem 0.5rem;
+}
+
 .settings-value {
     font-family: var(--font-text);
     font-size: 0.75rem;
@@ -867,4 +900,8 @@ material-symbol {
 
 #device-selector-list .device:hover {
     background: #fff2;
+}
+
+#value-input .modal {
+    min-width: 15rem;
 }

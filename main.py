@@ -379,7 +379,6 @@ async def websocket_handler(request):
                     await send_busses(ws)
                     await send_strips(ws)
                     await send_vban(ws)
-                    await init_message(ws)
                 elif data.get("type") == "bus":
                     await rec_busses(ws, data)
                     session["ignoreUpdate"] = True
