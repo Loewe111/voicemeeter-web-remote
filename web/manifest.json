@@ -1,6 +1,6 @@
 {
-    "name": "Voicemeeter Remote",
-    "short_name": "VM Remote",
+    "name": "MeeterLink",
+    "short_name": "MeeterLink",
     "description": "Remote control for Voicemeeter",
     "start_url": "/",
     "display": "standalone",

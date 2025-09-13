@@ -1,4 +1,4 @@
-# Web Remote for Voicemeter
+# MeeterLink
 
 A web-based remote control interface for Voicemeter
 Allows you to control pretty much everything in Voicemeter from a web browser.
@@ -27,7 +27,7 @@ You need to have Voicemeeter Potato installed on your system.
 3. If needed, you can edit the `config.toml` file to configure the host and port for the web server, as well as other settings like enabling the lock option.
    - The default host is `0.0.0.0` and the default port is `8080`.
    - The lock option is enabled by default.
-4. Run the `vm_web_remote.exe` file to start the server.
+4. Run the `meeterlink.exe` file to start the server.
 5. Open your web browser and go to `http://localhost:8080` (or the configured host and port).
 
 ### Usage
