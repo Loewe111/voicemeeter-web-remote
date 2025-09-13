@@ -25,9 +25,9 @@
         </div>
         <span class="spacer"></span>
         <div class="header-status" id="status-bar">
-            <material-symbol class="status-icon" id="status-connected">cell_tower</material-symbol>
-            <material-symbol class="status-icon" id="status-receiving">call_received</material-symbol>
-            <material-symbol class="status-icon" id="status-sending">call_made</material-symbol>
+            <material-symbol class="status-icon" id="status-connected" title="Connection Status">cell_tower</material-symbol>
+            <material-symbol class="status-icon" id="status-receiving" title="Receiving">call_received</material-symbol>
+            <material-symbol class="status-icon" id="status-sending" title="Sending">call_made</material-symbol>
         </div>
     </div>
     <div class="channel-view" id="channel-view">
@@ -73,7 +73,7 @@
                 <canvas id="compressor-preview"></canvas>
             </div>
             <div class="option" id="options-gate">
-                <span class="option-title"><material-symbol>door_front</material-symbol>Gate</span>
+                <span class="option-title"><material-symbol>filter_alt</material-symbol>Gate</span>
                 <canvas id="gate-preview"></canvas>
             </div>
             <div class="option" id="options-simple-eq">
@@ -109,6 +109,10 @@
                             <material-symbol class="button-icon">restart_alt</material-symbol>
                             <span class="button-label">Restart Audio Engine</span>
                         </span>
+                    </div>
+                    <div class="settings-setting">
+                        <span class="settings-label">Monitoring Channel</span>
+                        <select id="settings-monitor-channel-select" class="settings-input settings-input-single"></select>
                     </div>
                 </div>
             </div>

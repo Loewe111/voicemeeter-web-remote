@@ -145,6 +145,7 @@ class VMBus {
     sel = false;
     gain = 0;
     label = '';
+    monitor = false;
 
     fx = [0, 0, 0, 0];
 
@@ -183,6 +184,7 @@ class VMBus {
         this.device = object.device || null;
         this.device_rate = object.device_rate || null;
         this.isPhysical = object.isPhysical || false;
+        this.monitor = object.monitor || false;
     }
 
     asObject() {

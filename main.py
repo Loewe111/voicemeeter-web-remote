@@ -158,6 +158,7 @@ async def send_busses(ws):
                 "mute": bus.mute,
                 "sel": bus.sel,
                 "gain": bus.gain,
+                "monitor": bus.monitor,
                 "eq": serialize_eq(bus.eq),
                 "fx": [getattr(bus, output, False) for output in OUTPUT_EFFECT_NAMES],
                 "device": bus.device.name if getattr(bus, 'device', None) else None,
@@ -391,6 +392,9 @@ async def websocket_handler(request):
                 elif data.get("type") == "action":
                     if data.get("action") == "restart-audio-engine":
                         vm.command.restart()
+                    if data.get("action") == "set-monitor-channel":
+                        index = data.get("index", 0)
+                        vm.bus[index].monitor = True
                 elif data.get("type") == "device":
                     await set_device(ws, data)
             elif msg.type == aiohttp.WSMsgType.ERROR:

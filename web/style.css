@@ -204,11 +204,28 @@ material-symbol {
     font-weight: bold;
     color: var(--text);
     text-align: center;
-    margin-bottom: 0.5rem;
+    /* margin-bottom: 0.5rem; */
     height: 2.5em;
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.channel-icons {
+    font-family: 'Material Symbols Sharp', sans-serif;
+    font-size: 1rem;
+    color: #fff2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* gap: 0.25rem; */
+    /* margin-bottom: 0.5rem; */
+    height: 1em;
+    cursor: help;
+}
+
+.channel-icons .on {
+    color: var(--primary);
 }
 
 /* Knob */
@@ -727,6 +744,11 @@ material-symbol {
     min-width: 2rem;
     width: 100%;
     box-sizing: border-box;
+}
+
+.settings-input-single {
+    width: auto;
+    height: 2.5rem;
 }
 
 .settings-input:focus {

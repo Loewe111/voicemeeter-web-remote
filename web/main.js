@@ -61,10 +61,26 @@ function createInputChannel() {
     channel.type = 'input';
     channel.strip = new VMStrip();
     channel.element = $(document.createElement('div')).addClass('channel');
+    channel.header = {};
     // Add channel label
-    const label = $(document.createElement('span')).addClass('channel-label');
-    label.text('Input Channel');
-    channel.element.append(label);
+    channel.header.label = $(document.createElement('span')).addClass('channel-label');
+    channel.header.label.text('Input Channel');
+
+    channel.header.icons = {};
+
+    channel.header.icons.vban = $(document.createElement('span')).addClass('material-symbols-outlined').attr('data-icon', 'vban').attr('title', 'VBAN Input').text('lan');
+    channel.header.icons.connected = $(document.createElement('span')).addClass('material-symbols-outlined').attr('data-icon', 'connected').attr('title', 'Physical Input').text('usb');
+    channel.header.icons.compressor = $(document.createElement('span')).addClass('material-symbols-outlined').attr('data-icon', 'compressor').attr('title', 'Compressor').text('compress');
+    channel.header.icons.gate = $(document.createElement('span')).addClass('material-symbols-outlined').attr('data-icon', 'gate').attr('title', 'Gate').text('filter_alt');
+    channel.header.icons.eq = $(document.createElement('span')).addClass('material-symbols-outlined').attr('data-icon', 'eq').attr('title', '3 Band EQ').text('equalizer');
+
+    const iconsContainer = $(document.createElement('div')).addClass('channel-icons');
+    Object.values(channel.header.icons).forEach(icon => {
+        iconsContainer.append(icon);
+    });
+
+    channel.element.append(iconsContainer);
+    channel.element.append(channel.header.label);
 
     // Add Inputs
     channel.inputs = {};
@@ -138,10 +154,24 @@ function createOutputChannel() {
     channel.type = 'output';
     channel.bus = new VMBus();
     channel.element = $(document.createElement('div')).addClass('channel');
+    channel.header = {};
     // Add channel label
-    const label = $(document.createElement('span')).addClass('channel-label');
-    label.text('Output Channel');
-    channel.element.append(label);
+    channel.header.label = $(document.createElement('span')).addClass('channel-label');
+    channel.header.label.text('Output Channel');
+
+    channel.header.icons = {};
+
+    channel.header.icons.vban = $(document.createElement('span')).addClass('material-symbols-outlined').attr('data-icon', 'vban').attr('title', 'VBAN Output').text('lan');
+    channel.header.icons.connected = $(document.createElement('span')).addClass('material-symbols-outlined').attr('data-icon', 'connected').attr('title', 'Physical Output').text('usb');
+    channel.header.icons.monitor = $(document.createElement('span')).addClass('material-symbols-outlined').attr('data-icon', 'monitor').attr('title', 'Monitor').text('headphones');
+
+    const iconsContainer = $(document.createElement('div')).addClass('channel-icons');
+    Object.values(channel.header.icons).forEach(icon => {
+        iconsContainer.append(icon);
+    });
+
+    channel.element.append(iconsContainer);
+    channel.element.append(channel.header.label);
 
     // Add Inputs
     channel.inputs = {};
@@ -168,6 +198,7 @@ function createOutputChannel() {
         onClick: (value) => {
             channel.bus.sel = value;
             channelChanged(channel);
+            updateAllBusIcons();
         }
     });
 
@@ -217,6 +248,7 @@ function createDetailsView(channel) {
 
     detailsChannel = {
         channel: channel,
+        channelIndex: channel.type === 'input' ? inputChannels.indexOf(channel) : outputChannels.indexOf(channel),
         type: channel.type,
         element: channelElement,
         inputs: channel.inputs,
@@ -352,6 +384,7 @@ function createDetailsView(channel) {
             onChange: (value) => {
                 detailsChannel.strip.bandEq.treble = value;
                 channelChanged(channel);
+                updateStripIcons(detailsChannel.channelIndex);
             }
         });
         simple_eq_options.append(detailsChannel.options.band_eq.treble.element);
@@ -360,6 +393,7 @@ function createDetailsView(channel) {
             onChange: (value) => {
                 detailsChannel.strip.bandEq.mid = value;
                 channelChanged(channel);
+                updateStripIcons(detailsChannel.channelIndex);
             }
         });
         simple_eq_options.append(detailsChannel.options.band_eq.mid.element);
@@ -368,6 +402,7 @@ function createDetailsView(channel) {
             onChange: (value) => {
                 detailsChannel.strip.bandEq.bass = value;
                 channelChanged(channel);
+                updateStripIcons(detailsChannel.channelIndex);
             }
         });
         simple_eq_options.append(detailsChannel.options.band_eq.bass.element);
@@ -466,6 +501,7 @@ function createDetailsView(channel) {
                 channel.strip.compressor.ratio = value;
                 channelChanged(channel);
                 detailsViewRerender();
+                updateStripIcons(detailsChannel.channelIndex);
             }
         });
         detailsChannel.options.compressor.threshold = new Knob(createKnob('blue'), {
@@ -521,6 +557,7 @@ function createDetailsView(channel) {
                 channel.strip.compressor = structuredClone(defaultStrip.compressor);
                 channelChanged(channel);
                 updateDetailsView();
+                updateStripIcons(detailsChannel.channelIndex);
             }
         });
         compressor_options.append(detailsChannel.options.compressor.ratio.element);
@@ -548,6 +585,7 @@ function createDetailsView(channel) {
                 channel.strip.gate.threshold = value;
                 detailsViewRerender();
                 channelChanged(channel);
+                updateStripIcons(detailsChannel.channelIndex);
             }
         });
         detailsChannel.options.gate.damping = new Knob(createKnob('blue'), {
@@ -595,6 +633,7 @@ function createDetailsView(channel) {
                 channel.strip.gate = structuredClone(defaultStrip.gate);
                 channelChanged(channel);
                 updateDetailsView();
+                updateStripIcons(detailsChannel.channelIndex);
             }
         });
         gate_options.append(detailsChannel.options.gate.threshold.element);
@@ -906,6 +945,23 @@ function updateVbanOptions(data) {
             }
         });
     });
+
+    // Update Channels
+    inputChannels.forEach((channel, index) => {
+        let vbanActive = false;
+        if (vbanOptions && vbanOptions.incomingStreams) {
+            vbanActive = vbanOptions.incomingStreams.some(stream => stream.enabled && stream.route === index);
+        }
+        channel.header.icons.vban.toggleClass('on', vbanActive);
+    });
+
+    outputChannels.forEach((channel, index) => {
+        let vbanActive = false;
+        if (vbanOptions && vbanOptions.outgoingStreams) {
+            vbanActive = vbanOptions.outgoingStreams.some(stream => stream.enabled && stream.route === index);
+        }
+        channel.header.icons.vban.toggleClass('on', vbanActive);
+    });
 }
 
 function vbanOptionsChanged(incoming, index) {
@@ -1057,6 +1113,7 @@ function selectDevice(channel, device_type, device_name) {
         device_type: device_type,
         device_name: device_name
     });
+    requestUpdate();
 }
 
 function updateSetup(data) {
@@ -1080,14 +1137,41 @@ function updateBusses(busses) {
         if (detailsChannel && detailsChannel.channel === channel) {
             updateDetailsView();
         }
+
+        updateBusIcons(index);
     });
+
+    updateMonitorSettings();
+}
+
+function updateAllBusIcons() {
+    outputChannels.forEach((channel, index) => {
+        updateBusIcons(index);
+    });
+}
+
+function updateBusIcons(index) {
+    let channel = outputChannels[index];
+    channel.header.icons.connected.toggle(channel.bus.isPhysical);
+    channel.header.icons.connected.toggleClass('on', !!channel.bus.device && channel.bus.device.length > 0);
+    channel.header.icons.monitor.toggle(channel.bus.monitor);
+
+    let monitoring = outputChannels.some(ch => ch.bus.sel); // check if any output has sel active
+    channel.header.icons.monitor.toggleClass('on', monitoring);
+
+    let vbanActive = false;
+    if (vbanOptions && vbanOptions.outgoingStreams) {
+        vbanActive = vbanOptions.outgoingStreams.some(stream => stream.enabled && stream.route === index);
+    }
+    channel.header.icons.vban.toggleClass('on', vbanActive);
 }
 
 function updateStrips(strips) {
     strips.forEach((strip, index) => {
         let channel = inputChannels[index];
         channel.strip.fromObject(strip);
-        channel.element.find('.channel-label').text(strip.label || `Input ${index + 1}`);
+        channel.header.label.text(strip.label || `Input ${index + 1}`);
+
         channel.inputs.eq.setValue(channel.strip.eq.on);
         channel.inputs.eq.hide(!channel.strip.isPhysical); // Hide EQ button for virtual strips
         channel.inputs.mono.setValue(channel.strip.mono);
@@ -1099,6 +1183,43 @@ function updateStrips(strips) {
         if (detailsChannel && detailsChannel.channel === channel) {
             updateDetailsView();
         }
+
+        updateStripIcons(index);
+    });
+}
+
+function updateStripIcons(index) {
+    console.log('Updating strip icons for channel', index);
+    let channel = inputChannels[index];
+    channel.header.icons.compressor.toggle(channel.strip.capabilities.compressor);
+    channel.header.icons.compressor.toggleClass('on', channel.strip.compressor.ratio > 1);
+    channel.header.icons.gate.toggle(channel.strip.capabilities.gate);
+    channel.header.icons.gate.toggleClass('on', channel.strip.gate.threshold > -60);
+    channel.header.icons.connected.toggle(channel.strip.isPhysical);
+    channel.header.icons.connected.toggleClass('on', !!channel.strip.device && channel.strip.device.length > 0);
+    channel.header.icons.eq.toggle(channel.strip.capabilities.band_eq);
+    channel.header.icons.eq.toggleClass('on', channel.strip.bandEq.bass !== 0 || channel.strip.bandEq.mid !== 0 || channel.strip.bandEq.treble !== 0);
+
+    let vbanActive = false;
+    if (vbanOptions && vbanOptions.incomingStreams) {
+        vbanActive = vbanOptions.incomingStreams.some(stream => stream.enabled && stream.route === index);
+    }
+    channel.header.icons.vban.toggleClass('on', vbanActive);
+}
+
+function updateMonitorSettings() {
+    $('#settings-monitor-channel-select').empty();
+    outputChannels.forEach((channel, index) => {
+        let option = $('<option></option>').val(index).text(channel.bus.label ? `Output ${index + 1} (${channel.bus.label})` : `Output ${index + 1}`);
+        $('#settings-monitor-channel-select').append(option);
+        if (channel.bus.monitor) {
+            $('#settings-monitor-channel-select').val(index);
+        }
+    });
+    $('#settings-monitor-channel-select').on('change', function() {
+        let selectedIndex = parseInt($(this).val());
+        sendWebSocket({ type: 'action', action: 'set-monitor-channel', index: selectedIndex });
+        updateAllBusIcons();
     });
 }
 
@@ -1172,6 +1293,12 @@ function blinkStatusIcon(element, duration = 100) {
 
 // Websocket connection
 
+function requestUpdate() {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        sendWebSocket({ type: 'update' });
+    }
+}
+
 function websocketTask() {
     if (!ws || ws.readyState == WebSocket.CLOSED) {
         console.warn('WebSocket is closed. Reconnecting...');
@@ -1182,7 +1309,7 @@ function websocketTask() {
         return;
     }
 
-    sendWebSocket({ type: 'update' });
+    requestUpdate();
 }
 
 var wsTaskInterval;
@@ -1287,6 +1414,7 @@ function init() {
         closeDetailsView();
     });
 
+    updateMonitorSettings();
     $('#settings-restart-audio-engine').click(function() {
         sendWebSocket({ type: 'action', action: 'restart-audio-engine' });
     });
