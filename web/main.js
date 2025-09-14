@@ -17,6 +17,10 @@ var setup = {
     type: null
 };
 
+var settings = {
+    sliderMode: 'normal', // normal, safe
+}
+
 const defaultStrip = new VMStrip();
 const defaultBus = new VMBus();
 
@@ -128,6 +132,7 @@ function createInputChannel() {
         value: 0,
         unit: 'dB',
         labels: 10,
+        safeMode: settings.sliderMode === 'safe',
         onChange: (value) => {
             channel.strip.gain = value;
             channelChanged(channel);
@@ -220,6 +225,7 @@ function createOutputChannel() {
         value: 0,
         unit: 'dB',
         labels: 10,
+        safeMode: settings.sliderMode === 'safe',
         onChange: (value) => {
             channel.bus.gain = value;
             channelChanged(channel);
@@ -1189,7 +1195,6 @@ function updateStrips(strips) {
 }
 
 function updateStripIcons(index) {
-    console.log('Updating strip icons for channel', index);
     let channel = inputChannels[index];
     channel.header.icons.compressor.toggle(channel.strip.capabilities.compressor);
     channel.header.icons.compressor.toggleClass('on', channel.strip.compressor.ratio > 1);
@@ -1422,6 +1427,22 @@ function init() {
         switchToSettingsGroup(this.id);
     });
     switchToSettingsGroup('settings-general');
+
+    settings = JSON.parse(localStorage.getItem('settings')) || settings;
+
+    $('#settings-slider-mode-select').val(settings.sliderMode);
+    $('#settings-slider-mode-select').on('change', function() {
+        settings.sliderMode = $(this).val();
+        localStorage.setItem('settings', JSON.stringify(settings));
+
+        // Update existing sliders
+        inputChannels.forEach(channel => {
+            channel.inputs.gain.safeMode = settings.sliderMode === 'safe';
+        });
+        outputChannels.forEach(channel => {
+            channel.inputs.gain.safeMode = settings.sliderMode === 'safe';
+        });
+    });
 
     $(window).resize(function() {
         detailsViewRerender();

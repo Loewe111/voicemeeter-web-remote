@@ -88,6 +88,7 @@ material-symbol {
 .header-status .status-icon {
     font-size: 1.5rem;
     color: #fff2;
+    cursor: help;
 }
 
 .header-status .status-icon.ok {
@@ -821,6 +822,22 @@ material-symbol {
 
 .settings-setting > :first-child {
     flex: 1;
+}
+
+.settings-label {
+    font-family: var(--font-text);
+    font-size: 1rem;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.settings-tooltip-icon {
+    font-family: 'Material Symbols Sharp', sans-serif;
+    font-size: 1.25rem;
+    color: #fff5;
+    cursor: help;
 }
 
 .vban-list {

@@ -218,6 +218,8 @@ class Slider {
         this.unit = options.unit || '';
         this.onchange = options.onChange || function() {};
 
+        this.safeMode = options.safeMode || false;
+
         this._drag = {
             startValue: 0,
             dragging: false,
@@ -275,6 +277,10 @@ class Slider {
     }
 
     _reset(event) {
+        if (this.safeMode) {
+            this._showValueInput();
+            return;
+        }
         this.setValue(this.defaultValue);
         this.onchange(this.value);
     }
@@ -286,6 +292,8 @@ class Slider {
     }
 
     _rangeClick(event) {
+        if (this.safeMode) return;
+
         const yStart = this._elements.range.offset().top;
         const yEnd = this._elements.range.offset().top + this._elements.range.outerHeight();
         let percent = (this._eventPosition(event.originalEvent).y - yStart) / (yEnd - yStart);
@@ -321,6 +329,11 @@ class Slider {
     _dragStart(event) {
         if (event.originalEvent.button == 2) return;
 
+        const currentY = this._elements.knob.offset().top + this._elements.knob.outerHeight() / 2;
+        const deltaMouse = this._eventPosition(event.originalEvent).y - currentY;
+
+        this._drag.mouseOffsetY = deltaMouse;
+
         this._drag.startValue = this.value;
         this.element.addClass('dragging');
         this._drag.dragging = true;
@@ -338,7 +351,7 @@ class Slider {
         const yStart = this._elements.range.offset().top;
         const yEnd = this._elements.range.offset().top + this._elements.range.outerHeight();
 
-        let percent = (this._eventPosition(event.originalEvent).y - yStart) / (yEnd - yStart);
+        let percent = (this._eventPosition(event.originalEvent).y - this._drag.mouseOffsetY - yStart) / (yEnd - yStart);
 
         let newValue = this.max + percent * (this.min - this.max);
 
