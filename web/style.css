@@ -75,6 +75,25 @@ material-symbol {
     font-weight: bold;
 }
 
+.header-instance-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.header-instance-name {
+    font-family: var(--font-text);
+    font-size: 1rem;
+    font-weight: normal;
+    color: #fff5;
+}
+
+.header-instance-ip {
+    font-family: var(--font-text);
+    font-size: 0.75rem;
+    font-weight: normal;
+    color: #fff5;
+}
+
 .header .spacer {
     flex: 1;
 }

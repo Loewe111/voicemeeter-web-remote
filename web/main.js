@@ -1127,6 +1127,9 @@ function updateSetup(data) {
     $('.vm-info-version').text(setup.version);
     $('.vm-info-type').text(setup.type);
     $('.vm-info-version-string').text(`Voicemeeter ${setup.type} ${setup.version}`.toUpperCase());
+    $('#instance-info .header-instance-name').text(setup.hostname);
+    $('#instance-info .header-instance-ip').text(setup.ip_address);
+    $('#instance-info').show();
 }
 
 function updateBusses(busses) {

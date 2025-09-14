@@ -6,6 +6,7 @@ from aiohttp import web
 import asyncio
 import logging
 from log import LogFormatter
+import socket
 # from voicemeeterlib.error import InstallError
 
 vm = None
@@ -34,6 +35,10 @@ else:
 print(f"Config file path: {os.path.join(FILE_DIR, 'config.toml')}")
 with open(os.path.join(FILE_DIR, "config.toml"), "rb") as f:
     CONFIG = tomllib.load(f)
+
+HOSTNAME = socket.gethostname()
+IP_ADDRESS = socket.gethostbyname(HOSTNAME)
+print(f"Host: {HOSTNAME}, IP: {IP_ADDRESS}")
 
 OUTPUT_CHANNEL_NAMES = []
 INPUT_EFFECT_NAMES = []
@@ -355,7 +360,9 @@ async def init_message(ws):
             "devices": {
                 "input": [vm.device.input(i) for i in range(vm.device.ins)],
                 "output": [vm.device.output(i) for i in range(vm.device.outs)]
-            }
+            },
+            "hostname": HOSTNAME,
+            "ip_address": IP_ADDRESS
         }
     })
 
