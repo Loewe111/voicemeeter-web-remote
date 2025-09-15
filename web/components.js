@@ -115,6 +115,7 @@ class Knob {
 
     _dragStart(event) {
         if (this.disabled) return;
+        event.preventDefault();
         // check if its right mouse button
         if (event.originalEvent.button === 2) return;
 
@@ -135,6 +136,7 @@ class Knob {
     _dragMove(event) {
         if (this.disabled) return;
         if (!this._drag.dragging) return;
+        event.preventDefault();
 
         const dx = this._eventPosition(event.originalEvent).x - this._drag.startX;
         const dy = this._eventPosition(event.originalEvent).y - this._drag.startY;
@@ -328,6 +330,7 @@ class Slider {
 
     _dragStart(event) {
         if (event.originalEvent.button == 2) return;
+        event.preventDefault();
 
         const currentY = this._elements.knob.offset().top + this._elements.knob.outerHeight() / 2;
         const deltaMouse = this._eventPosition(event.originalEvent).y - currentY;
@@ -347,6 +350,7 @@ class Slider {
 
     _dragMove(event) {
         if (!this._drag.dragging) return;
+        event.preventDefault();
 
         const yStart = this._elements.range.offset().top;
         const yEnd = this._elements.range.offset().top + this._elements.range.outerHeight();

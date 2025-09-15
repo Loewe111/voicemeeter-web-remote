@@ -10,6 +10,10 @@
     --border-width: 1px;
 }
 
+* {
+    overscroll-behavior-y: none;
+}
+
 body {
     background-color: #020202;
     color: #ffffff;
@@ -425,6 +429,7 @@ material-symbol {
     font-weight: bold;
     color: var(--text);
     z-index: 1;
+    text-wrap: nowrap;
 }
 
 .slider .slider-range .slider-vu {

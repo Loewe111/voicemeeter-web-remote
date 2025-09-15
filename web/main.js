@@ -913,9 +913,15 @@ function updateVbanOptions(data) {
         let elements = vbanOptions.incomingElements[index];
         elements.enabled.toggleClass('on', stream.enabled);
         elements.enabled.find('.button-label material-symbol').text(stream.enabled ? 'check' : 'close');
-        elements.name.val(stream.name);
-        elements.ip.val(stream.ip);
-        elements.port.val(stream.port);
+        if (!elements.name.is(':focus')) {
+            elements.name.val(stream.name);
+        }
+        if (!elements.ip.is(':focus')) {
+            elements.ip.val(stream.ip);
+        }
+        if (!elements.port.is(':focus')) {
+            elements.port.val(stream.port);
+        }
         elements.samplerate.text(`${stream.samplerate} Hz`);
         elements.channels.text(stream.channels);
         elements.format.text(`${stream.format} Bit`);
@@ -934,9 +940,15 @@ function updateVbanOptions(data) {
         let elements = vbanOptions.outgoingElements[index];
         elements.enabled.toggleClass('on', stream.enabled);
         elements.enabled.find('.button-label material-symbol').text(stream.enabled ? 'check' : 'close');
-        elements.name.val(stream.name);
-        elements.ip.val(stream.ip);
-        elements.port.val(stream.port);
+        if (!elements.name.is(':focus')) {
+            elements.name.val(stream.name);
+        }
+        if (!elements.ip.is(':focus')) {
+            elements.ip.val(stream.ip);
+        }
+        if (!elements.port.is(':focus')) {
+            elements.port.val(stream.port);
+        }
         elements.samplerate.val(stream.samplerate);
         elements.channels.val(stream.channels);
         elements.format.val(stream.format);
@@ -1130,6 +1142,7 @@ function updateSetup(data) {
     $('#instance-info .header-instance-name').text(setup.hostname);
     $('#instance-info .header-instance-ip').text(setup.ip_address);
     $('#instance-info').show();
+    document.title = `MeeterLink (${setup.hostname})`;
 }
 
 function updateBusses(busses) {
@@ -1410,7 +1423,7 @@ function switchToSettingsGroup(id) {
 function init() {
     connectWebSocket();
     if (!wsTaskInterval) {
-        wsTaskInterval = setInterval(websocketTask, 15000);
+        wsTaskInterval = setInterval(websocketTask, 2000);
     }
 
     $('#view-all, #view-inputs, #view-outputs, #view-settings').click(function() {
