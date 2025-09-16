@@ -20,7 +20,9 @@ Allows you to control pretty much everything in Voicemeter from a web browser.
 
 ## Installation and Usage
 
-You need to have Voicemeeter Potato installed on your system.
+> [!IMPORTANT]
+> You need to have Voicemeeter Potato installed on your system.
+> Since Voicemeeter is only available for Windows, this project only works on Windows as well.
 
 1. Download the latest build from the [Releases](https://github.com/Loewe111/voicemeeter-web-remote/releases)
 2. Extract the contents of the ZIP file to a directory of your choice.
@@ -44,3 +46,9 @@ Double-clicking on a slider or knob will reset it to its default value.
 Click and drag sliders and knobs to adjust their values. You can also use the scroll wheel to adjust sliders and knobs, holding the `Shift` key while scrolling will adjust the value in bigger steps.
 
 Right-clicking on a slider allows you to manually enter your desired value using your keyboard.
+
+#### Slider Modes
+
+In the Settings menu, you can choose between different slider modes:
+- **Normal**: The slider behaves like described above.
+- **Safe**: The slider will only move when you click and drag it, or when using the scroll wheel while hovering over it. It can not be changed by clicking on the slider track or reset by double-clicking it. This prevents accidentally changing the volume to a loud value.
