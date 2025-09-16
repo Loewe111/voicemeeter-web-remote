@@ -744,14 +744,14 @@ material-symbol {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.5rem;
 }
 
 .settings-view-content {
     background: var(--background);
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 1rem;
+    padding: 0.5rem;
 }
 
 .settings-input {
@@ -773,7 +773,8 @@ material-symbol {
 
 .settings-input-single {
     width: auto;
-    height: 2.5rem;
+    height: 2rem;
+    box-sizing: content-box;
 }
 
 .settings-input:focus {
@@ -833,7 +834,6 @@ material-symbol {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    padding: 0.5rem;
 }
 
 .settings-setting {
@@ -844,7 +844,7 @@ material-symbol {
     gap: 0.5rem;
 }
 
-.settings-setting > :first-child {
+.settings-setting > * {
     flex: 1;
 }
 
@@ -878,7 +878,6 @@ material-symbol {
         3fr; /* Routing */
 
     gap: 0.5rem;
-    padding: 0.5rem;
 }
 
 .device-list {
@@ -892,7 +891,6 @@ material-symbol {
     ;
 
     gap: 0.5rem;
-    padding: 0.5rem;
 }
 
 /* Modals */

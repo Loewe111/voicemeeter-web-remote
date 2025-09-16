@@ -102,6 +102,10 @@
                 <span class="settings-view-title">General</span>
             </span>
             <div class="settings-view-content">
+                <span class="settings-view-subheader">
+                    <material-symbol class="settings-view-icon">manufacturing</material-symbol>
+                    <span class="settings-view-title">Voicemeeter Engine</span>
+                </span>
                 <div class="settings-settings">
                     <div class="settings-setting">
                         <span class="settings-label">Voicemeeter Version</span>
@@ -118,15 +122,32 @@
                         <span class="settings-label">Monitoring Channel</span>
                         <select id="settings-monitor-channel-select" class="settings-input settings-input-single"></select>
                     </div>
+                </div>
+            </div>
+            <div class="settings-view-content">
+                <span class="settings-view-subheader">
+                    <material-symbol class="settings-view-icon">desktop_windows</material-symbol>
+                    <span class="settings-view-title">User Interface</span>
+                    <span class="settings-tooltip-icon" title="The user interface settings are local to this client and are not synchronized with other clients">sync_disabled</span>
+                </span>
+                <div class="settings-settings">
                     <div class="settings-setting">
                         <span class="settings-label">
                             Slider Mode
-                            <span class="settings-tooltip-icon" title="This setting is local to this client">sync_disabled</span>
                         </span>
                         <select id="settings-slider-mode-select" class="settings-input settings-input-single">
                             <option value="normal">Normal</option>
                             <option value="safe">Safe</option>
                         </select>
+                    </div>
+                    <div class="settings-setting">
+                        <span class="settings-label">
+                            Fullscreen Mode
+                        </span>
+                        <span class="details-button blue" id="settings-fullscreen-toggle">
+                            <material-symbol class="button-icon">fullscreen</material-symbol>
+                            <span class="button-label" id="settings-fullscreen-label">Toggle Fullscreen</span>
+                        </span>
                     </div>
                 </div>
             </div>

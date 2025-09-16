@@ -1460,6 +1460,16 @@ function init() {
         });
     });
 
+    $('#settings-fullscreen-toggle').on('click', function() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+        }
+    });
+
     $(window).resize(function() {
         detailsViewRerender();
     });
