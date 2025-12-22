@@ -8,7 +8,7 @@ function getCanvasSize(canvas) {
     return { width, height };
 }
 
-function drawVUMeter(canvas, value, min, max) {
+function drawVUMeter(canvas, values, min, max) {
     const colors = {
         redOn: '#ff0000',
         redOff: '#200000',
@@ -23,30 +23,34 @@ function drawVUMeter(canvas, value, min, max) {
     const ctx = canvas.getContext('2d');
     let { width, height } = getCanvasSize(canvas);
 
+    const bar_width = width / values.length;
+    
     // set canvas size to match parent element
     canvas.width = width;
     canvas.height = height;
 
     ctx.clearRect(0, 0, width, height);
+    
+    values.forEach((value, index) => {
+        for (let i = 0; i < height; i++) {
+            const boxY = height - i * 1; // Invert Y axis
+            const boxValue = min + (max - min) * (i / (height - 1));
+            let color;
 
-    for (let i = 0; i < height; i++) {
-        const boxY = height - i * 1; // Invert Y axis
-        const boxValue = min + (max - min) * (i / (height - 1));
-        let color;
+            if (boxValue >= redThreshold) {
+                color = value >= boxValue ? colors.redOn : colors.redOff;
+            } else if (boxValue >= yellowThreshold) {
+                color = value >= boxValue ? colors.yellowOn : colors.yellowOff;
+            } else {
+                color = value >= boxValue ? colors.greenOn : colors.greenOff;
+            }
 
-        if (boxValue >= redThreshold) {
-            color = value >= boxValue ? colors.redOn : colors.redOff;
-        } else if (boxValue >= yellowThreshold) {
-            color = value >= boxValue ? colors.yellowOn : colors.yellowOff;
-        } else {
-            color = value >= boxValue ? colors.greenOn : colors.greenOff;
+            ctx.fillStyle = color;
+            if (i % 3 == 0) {
+                ctx.fillRect(index*bar_width, boxY, bar_width-1, 1);
+            }
         }
-
-        ctx.fillStyle = color;
-        if (i % 3 == 0) {
-            ctx.fillRect(0, boxY, width, 1);
-        }
-    }
+    });
 }
 
 function drawCompressorPreview(canvas, ratio, threshold, knee) {

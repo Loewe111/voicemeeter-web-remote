@@ -19,6 +19,7 @@ var setup = {
 
 var settings = {
     sliderMode: 'normal', // normal, safe
+    vuMeterMode: 'mono'
 }
 
 const defaultStrip = new VMStrip();
@@ -1244,36 +1245,43 @@ function updateMonitorSettings() {
     });
 }
 
+function calculateVULevels(levels, mode) {
+    if (mode == 'auto') {
+        let validLevels = levels.filter(level => level !== -200);
+        if (validLevels.length === 1) {
+            mode = 'mono';
+        } else if (validLevels.length === 2 && (validLevels[0] !== -200 && validLevels[1] !== -200)) {
+            mode = 'stereo';
+        } else {
+            mode = 'surround';
+        }
+    }
+    if (mode == 'mono') {
+        let level_total = 0;
+        let validLevels = levels.filter(level => level !== -200);
+
+        if (validLevels.length === 0) {
+            return [-200];
+        } 
+        let sum = validLevels.reduce((partialSum, a) => partialSum + a, 0);
+        level_total = sum / validLevels.length;
+        return [level_total];
+    }
+    if (mode == 'stereo') {
+        return levels.slice(0, 2);
+    }
+    if (mode == 'surround') {
+        return levels;
+    }
+    return [];
+}
+
 function updateVULevels(levels) {
     outputChannels.forEach((channel, index) => {
-        let level_total = 0;
-        let level_channels = levels.outputs[index];
-        let validLevels = level_channels.filter(level => level !== -200);
-
-        if (validLevels.length === 0) {
-            level_total = -200;
-        } else {
-            validLevels.forEach((level, i) => {
-                level_total += level;
-                level_total /= 2;
-            });
-        }
-        channel.inputs.gain.setVUMeter(level_total);
+        channel.inputs.gain.setVUMeter(calculateVULevels(levels.outputs[index], settings.vuMeterMode) );
     });
     inputChannels.forEach((channel, index) => {
-        let level_total = 0;
-        let level_channels = levels.inputs[index];
-        let validLevels = level_channels.filter(level => level !== -200);
-
-        if (validLevels.length === 0) {
-            level_total = -200;
-        } else {
-            validLevels.forEach((level, i) => {
-                level_total += level;
-                level_total /= 2;
-            });
-        }
-        channel.inputs.gain.setVUMeter(level_total);
+        channel.inputs.gain.setVUMeter(calculateVULevels(levels.inputs[index], settings.vuMeterMode) );
     });
 }
 
@@ -1458,6 +1466,12 @@ function init() {
         outputChannels.forEach(channel => {
             channel.inputs.gain.safeMode = settings.sliderMode === 'safe';
         });
+    });
+
+    $('#settings-vu-meter-mode-select').val(settings.vuMeterMode);
+    $('#settings-vu-meter-mode-select').on('change', function() {
+        settings.vuMeterMode = $(this).val();
+        localStorage.setItem('settings', JSON.stringify(settings));
     });
 
     $('#settings-fullscreen-toggle').on('click', function() {

@@ -411,8 +411,8 @@ class Slider {
         this._update();
     }
 
-    setVUMeter(value) {
-        drawVUMeter(this._elements.vuMeter[0], value, this.min, this.max);
+    setVUMeter(values) {
+        drawVUMeter(this._elements.vuMeter[0], values, this.min, this.max);
         this._elements.vuMeter.show();
     }
 }
