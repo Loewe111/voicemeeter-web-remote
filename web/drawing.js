@@ -2,13 +2,15 @@ function getCanvasSize(canvas) {
     const style = getComputedStyle(canvas);
     let width = canvas.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
     let height = canvas.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+    width = Math.max(0, width);
+    height = Math.max(0, height);
     // account for device pixel ratio
     width = Math.floor(width * window.devicePixelRatio + 0.5);
     height = Math.floor(height * window.devicePixelRatio + 0.5);
     return { width, height };
 }
 
-function drawVUMeter(canvas, values, min, max) {
+function drawVUMeter(canvasM, values, min, max) {
     const colors = {
         redOn: '#ff0000',
         redOff: '#200000',
@@ -20,23 +22,19 @@ function drawVUMeter(canvas, values, min, max) {
     const redThreshold = 0; // dB threshold for peak indication
     const yellowThreshold = -20; // dB threshold for warning indication
 
-    const ctx = canvas.getContext('2d');
-    let { width, height } = getCanvasSize(canvas);
+    const ctx = canvasM.ctx;
+    let { width, height } = canvasM.size;
 
     const bar_width = width / values.length;
-    
-    // set canvas size to match parent element
-    canvas.width = width;
-    canvas.height = height;
 
     ctx.clearRect(0, 0, width, height);
     
-    values.forEach((value, index) => {
-        for (let i = 0; i < height; i++) {
-            const boxY = height - i * 1; // Invert Y axis
-            const boxValue = min + (max - min) * (i / (height - 1));
-            let color;
-
+    for (let i = 0; i < height; i++) {
+        const boxY = height - i * 1; // Invert Y axis
+        const boxValue = min + (max - min) * (i / (height - 1));
+        let color;
+        
+        values.forEach((value, index) => {
             if (boxValue >= redThreshold) {
                 color = value >= boxValue ? colors.redOn : colors.redOff;
             } else if (boxValue >= yellowThreshold) {
@@ -49,20 +47,18 @@ function drawVUMeter(canvas, values, min, max) {
             if (i % 3 == 0) {
                 ctx.fillRect(index*bar_width, boxY, bar_width-1, 1);
             }
-        }
-    });
+        });
+    }
 }
 
-function drawCompressorPreview(canvas, ratio, threshold, knee) {
-    const ctx = canvas.getContext('2d');
+function drawCompressorPreview(canvasM, ratio, threshold, knee) {
+    const ctx = canvasM.ctx;
 
     const dbMin = -60; // Minimum dB value
     const dbMax = 0; // Maximum dB value
     
-    const { width, height } = getCanvasSize(canvas);
-    console.log(`Canvas size: ${width}x${height}`);
-    canvas.width = width;
-    canvas.height = height;
+    let { width, height } = canvasM.size;
+
     // create a 5x5 grid
     const cols = 6;
     const rows = 6;
@@ -97,15 +93,14 @@ function drawCompressorPreview(canvas, ratio, threshold, knee) {
     ctx.fillRect(thresholdX - 3, thresholdY - 3, 6, 6);
 }
 
-function drawGatePreview(canvas, threshold, damping) {
-    const ctx = canvas.getContext('2d');
+function drawGatePreview(canvasM, threshold, damping) {
+    const ctx = canvasM.ctx;
 
     const dbMin = -60; // Minimum dB value
     const dbMax = 0; // Maximum dB value
-    // Get size without padding
-    const { width, height } = getCanvasSize(canvas);
-    canvas.width = width;
-    canvas.height = height;
+
+    const { width, height } = canvasM.size;
+
     // create a 5x5 grid
     const cols = 6;
     const rows = 6;
@@ -193,16 +188,11 @@ const eqTypes = [
     'highshelf'
 ]
 
-function drawEQPreview(canvas, cells, is_on) {
-    const ctx = canvas.getContext('2d');
+function drawEQPreview(audioCtx, canvasM, cells, is_on) {
+    const ctx = canvasM.ctx;
     
-    const style = getComputedStyle(canvas);
-    let width = canvas.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
-    let height = canvas.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
-    width = Math.floor(width * window.devicePixelRatio + 0.5);
-    height = Math.floor(height * window.devicePixelRatio + 0.5);
-    canvas.width = width;
-    canvas.height = height;
+    let { width, height } = canvasM.size;
+    console.log(`EQ Canvas size: ${width}x${height}`);
 
     const freqMin = 20;
     const freqMax = 20000;
@@ -231,7 +221,7 @@ function drawEQPreview(canvas, cells, is_on) {
         if ([3, 4].includes(cells[i].type)) {
             q = -3; 
         }
-        const bqfn = new BiquadFilterNode(new AudioContext(), {
+        const bqfn = new BiquadFilterNode(audioCtx, {
             type: eqTypes[cells[i].type],
             frequency: cells[i].freq,
             Q: q,
@@ -278,5 +268,36 @@ function drawEQPreview(canvas, cells, is_on) {
         ctx.moveTo(0, ((gainMax - 0) / (gainMax - gainMin)) * height);
         ctx.lineTo(width, ((gainMax - 0) / (gainMax - gainMin)) * height);
         ctx.stroke();
+    }
+}
+
+class CanvasManager {
+    constructor(canvasElement) {
+        this.canvas = canvasElement;
+        this.ctx = this.canvas.getContext('2d');
+        this.size = {
+            width: 0,
+            height: 0
+        }
+        this.resizeObserver = new ResizeObserver((entries) => {
+            const entry = entries.find(e => e.target === this.canvas);
+            if (!entry) return;
+            this.size.width = entry.devicePixelContentBoxSize[0].inlineSize;
+            this.size.height = entry.devicePixelContentBoxSize[0].blockSize;
+            this.canvas.width = this.size.width;
+            this.canvas.height = this.size.height;
+            this.canvas.dispatchEvent(this.canvasResizedEvent);
+        });
+        this.resizeObserver.observe(this.canvas, { box: "device-pixel-content-box" });
+
+        this.canvasResizedEvent = new CustomEvent('canvasResized');
+    }
+
+    updateSize() {
+        const { width, height } = getCanvasSize(this.canvas);
+        this.size.width = width;
+        this.size.height = height;
+        this.canvas.width = width;
+        this.canvas.height = height;
     }
 }

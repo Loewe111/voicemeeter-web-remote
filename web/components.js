@@ -240,6 +240,7 @@ class Slider {
             labels: this.element.find('.slider-labels'),
             vuMeter: this.element.find('.slider-vu')
         }
+        this._canvasManager = new CanvasManager(this._elements.vuMeter[0]);
 
         this._elements.knob.on('mousedown', (e) => this._dragStart(e));
         this.element.on('wheel', (e) => this._wheel(e));
@@ -412,7 +413,7 @@ class Slider {
     }
 
     setVUMeter(values) {
-        drawVUMeter(this._elements.vuMeter[0], values, this.min, this.max);
+        drawVUMeter(this._canvasManager, values, this.min, this.max);
         this._elements.vuMeter.show();
     }
 }

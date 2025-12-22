@@ -22,6 +22,12 @@ var settings = {
     vuMeterMode: 'mono'
 }
 
+const canvasManagers = {
+    eqPreview: null,
+    compressorPreview: null,
+    gatePreview: null
+}
+
 const defaultStrip = new VMStrip();
 const defaultBus = new VMBus();
 
@@ -44,6 +50,8 @@ const eqTypeNames = {
     5: 'LOW SHELF',
     6: 'HIGH SHELF',
 }
+
+const audioContext = new AudioContext();
 
 function createChannels(inputs, outputs) {
     // Clear existing channels
@@ -740,13 +748,13 @@ function updateDetailsView() {
 function detailsViewRerender() {
     if (!detailsChannel) return;
     if (detailsChannel.wrapper.capabilities.compressor) {
-        drawCompressorPreview($('#compressor-preview')[0], detailsChannel.strip.compressor.ratio, detailsChannel.strip.compressor.threshold, detailsChannel.strip.compressor.knee);
+        drawCompressorPreview(canvasManagers.compressor, detailsChannel.strip.compressor.ratio, detailsChannel.strip.compressor.threshold, detailsChannel.strip.compressor.knee);
     }
     if (detailsChannel.wrapper.capabilities.gate) {
-        drawGatePreview($('#gate-preview')[0], detailsChannel.strip.gate.threshold, detailsChannel.strip.gate.damping);
+        drawGatePreview(canvasManagers.gate, detailsChannel.strip.gate.threshold, detailsChannel.strip.gate.damping);
     }
     if (detailsChannel.wrapper.capabilities.parametric_eq) {
-        drawEQPreview($('#advanced-eq-preview')[0], detailsChannel.wrapper.eq.cells, detailsChannel.wrapper.eq.on);
+        drawEQPreview(audioContext, canvasManagers.advanced_eq, detailsChannel.wrapper.eq.cells, detailsChannel.wrapper.eq.on);
     }
 }
 
@@ -1487,6 +1495,15 @@ function init() {
     $(window).resize(function() {
         detailsViewRerender();
     });
+
+    // CanvasManagers
+    canvasManagers.compressor = new CanvasManager($('#compressor-preview')[0]);
+    canvasManagers.gate = new CanvasManager($('#gate-preview')[0]);
+    canvasManagers.advanced_eq = new CanvasManager($('#advanced-eq-preview')[0]);
+
+    canvasManagers.compressor.canvas.addEventListener('canvasResized', detailsViewRerender);
+    canvasManagers.gate.canvas.addEventListener('canvasResized', detailsViewRerender);
+    canvasManagers.advanced_eq.canvas.addEventListener('canvasResized', detailsViewRerender);
 
     initVbanOptions();
 }
