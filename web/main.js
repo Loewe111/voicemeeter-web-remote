@@ -277,6 +277,7 @@ function createDetailsView(channel) {
             advanced_eq: {},
             compressor: {},
             gate: {},
+            delay: {}
         }
     }
 
@@ -662,6 +663,22 @@ function createDetailsView(channel) {
         gate_options.hide();
     }
 
+    const delay_options = $('#options-delay');
+    delay_options.find('.knob').remove();
+
+    if (detailsChannel.wrapper.capabilities.delay) {
+        delay_options.show();
+        detailsChannel.options.delay.time = new Knob(createKnob('blue'), {
+            label: `DELAY TIME`, min: 0, max: 500, step: 1, decimals: 0, unit: 'ms', value: defaultBus.delay,
+            onChange: (value) => {
+                detailsChannel.wrapper.delay = value;
+                channelChanged(channel);
+            }
+        });
+        delay_options.append(detailsChannel.options.delay.time.element);
+    } else {
+        delay_options.hide();
+    }
     $('#channel-view').hide();
     view.show();
     updateDetailsView();
@@ -741,6 +758,11 @@ function updateDetailsView() {
         detailsChannel.options.gate.attack.setValue(detailsChannel.strip.gate.attack);
         detailsChannel.options.gate.hold.setValue(detailsChannel.strip.gate.hold);
         detailsChannel.options.gate.release.setValue(detailsChannel.strip.gate.release);
+    }
+
+    // Update Delay knob
+    if (detailsChannel.wrapper.capabilities.delay) {
+        detailsChannel.options.delay.time.setValue(detailsChannel.wrapper.delay);
     }
     detailsViewRerender();
 }
@@ -1285,6 +1307,8 @@ function calculateVULevels(levels, mode) {
 }
 
 function updateVULevels(levels) {
+    if (levels.timestamp + 1 < (Date.now() / 1000)) return; // Ignore data older than 1 second
+
     outputChannels.forEach((channel, index) => {
         channel.inputs.gain.setVUMeter(calculateVULevels(levels.outputs[index], settings.vuMeterMode) );
     });

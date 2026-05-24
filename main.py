@@ -4,12 +4,15 @@ import tomllib
 import aiohttp
 from aiohttp import web
 import asyncio
+import threading
 import logging
 from log import LogFormatter
 import socket
+import pystray
+from PIL import Image, ImageDraw
+import webbrowser
+import time
 # from voicemeeterlib.error import InstallError
-
-vm = None
 
 # Set up logging
 stream_handler = logging.StreamHandler()
@@ -56,7 +59,7 @@ elif CONFIG['voicemeeter']['kind'] == 'potato':
 sessions = []
 
 async def dirty_check():
-    if vm.pdirty:
+    if server['vm'].pdirty:
         for session in sessions:
             session["dirty"] = True
 
@@ -118,7 +121,7 @@ def serialize_vban(vm):
 
 async def send_vban(ws):
     try:
-        message = serialize_vban(vm)
+        message = serialize_vban(server['vm'])
         await ws.send_json({"vban": message})
     except Exception as e:
         log.error(f"Error sending VBAN data: {e}")
@@ -127,9 +130,9 @@ async def rec_vban(ws, data):
     try:
         stream = None
         if data["direction"] == "incoming":
-            stream = vm.vban.instream[data["index"]]
+            stream = server['vm'].vban.instream[data["index"]]
         elif data["direction"] == "outgoing":
-            stream = vm.vban.outstream[data["index"]]
+            stream = server['vm'].vban.outstream[data["index"]]
         if stream:
             if stream.on != data["values"].get("enabled", stream.on):
                 stream.on = data["values"].get("enabled", stream.on)
@@ -155,7 +158,7 @@ async def send_busses(ws):
         message = {
             "busses": []
         }
-        for bus in vm.bus:
+        for bus in server['vm'].bus:
             bus_data = {
                 "isPhysical": getattr(bus, 'device', None) is not None,
                 "label": bus.label,
@@ -167,7 +170,8 @@ async def send_busses(ws):
                 "eq": serialize_eq(bus.eq),
                 "fx": [getattr(bus, output, False) for output in OUTPUT_EFFECT_NAMES],
                 "device": bus.device.name if getattr(bus, 'device', None) else None,
-                "device_rate": bus.device.sr if getattr(bus, 'device', None) else None
+                "device_rate": bus.device.sr if getattr(bus, 'device', None) else None,
+                "delay": server['vm'].option.delay[bus.index].get() if getattr(bus, 'device', None) else 0
             }
             message["busses"].append(bus_data)
         await ws.send_json(message)
@@ -179,7 +183,7 @@ async def send_strips(ws):
         message = {
             "strips": []
         }
-        for strip in vm.strip:
+        for strip in server['vm'].strip:
             strip_data = {
                 "isPhysical": getattr(strip, 'eq', None) is not None,
                 "label": strip.label,
@@ -238,7 +242,7 @@ async def send_strips(ws):
 
 async def rec_busses(ws, data):
     try:
-        bus = vm.bus[data['index']]
+        bus = server['vm'].bus[data['index']]
         bus.label = data['values'].get('label', bus.label)
         bus.mute = data['values'].get('mute', bus.mute)
         bus.gain = data['values'].get('gain', bus.gain)
@@ -251,12 +255,15 @@ async def rec_busses(ws, data):
         if data['values'].get('fx', None) is not None:
             for i, fx_value in enumerate(data['values']['fx']):
                 setattr(bus, OUTPUT_EFFECT_NAMES[i], fx_value)
+
+        if 'delay' in data['values']:
+            server['vm'].option.delay[bus.index].set(data['values']['delay'])
     except Exception as e:
         log.error(f"Error updating bus: {e}")
 
 async def rec_strips(ws, data):
     try:
-        strip = vm.strip[data['index']]
+        strip = server['vm'].strip[data['index']]
         strip.label = data['values'].get('label', strip.label)
         strip.mute = data['values'].get('mute', strip.mute)
         strip.mono = data['values'].get('mono', strip.mono)
@@ -309,9 +316,9 @@ async def set_device(ws, data):
     try:
         channel = None
         if data['channel_type'] == 'input':
-            channel = vm.strip[data['channel_index']]
+            channel = server['vm'].strip[data['channel_index']]
         else:
-            channel = vm.bus[data['channel_index']]
+            channel = server['vm'].bus[data['channel_index']]
         if data['device_type'] == 'wdm':
             channel.device.wdm = data['device_name']
         elif data['device_type'] == 'ks':
@@ -340,8 +347,9 @@ async def level_poller(ws):
         try:
             levels = {
                 "levels": {
-                    "inputs": [strip.levels.postfader for strip in vm.strip],
-                    "outputs": [bus.levels.all for bus in vm.bus]
+                    "inputs": [strip.levels.postfader for strip in server['vm'].strip],
+                    "outputs": [bus.levels.all for bus in server['vm'].bus],
+                    "timestamp": time.time()
                 }
             }
             await ws.send_json(levels)
@@ -353,13 +361,13 @@ async def init_message(ws):
     # Send initial message to client
     await ws.send_json({
         "setup": {
-            "version": vm.version,
-            "type": vm.type,
-            "inputs": len(vm.strip),
-            "outputs": len(vm.bus),
+            "version": server['vm'].version,
+            "type": server['vm'].type,
+            "inputs": len(server['vm'].strip),
+            "outputs": len(server['vm'].bus),
             "devices": {
-                "input": [vm.device.input(i) for i in range(vm.device.ins)],
-                "output": [vm.device.output(i) for i in range(vm.device.outs)]
+                "input": [server['vm'].device.input(i) for i in range(server['vm'].device.ins)],
+                "output": [server['vm'].device.output(i) for i in range(server['vm'].device.outs)]
             },
             "hostname": HOSTNAME,
             "ip_address": IP_ADDRESS
@@ -398,10 +406,10 @@ async def websocket_handler(request):
                     session["ignoreUpdate"] = True
                 elif data.get("type") == "action":
                     if data.get("action") == "restart-audio-engine":
-                        vm.command.restart()
+                        server['vm'].command.restart()
                     if data.get("action") == "set-monitor-channel":
                         index = data.get("index", 0)
-                        vm.bus[index].monitor = True
+                        server['vm'].bus[index].monitor = True
                 elif data.get("type") == "device":
                     await set_device(ws, data)
             elif msg.type == aiohttp.WSMsgType.ERROR:
@@ -420,18 +428,111 @@ async def websocket_handler(request):
 async def index(request):
     return web.FileResponse(os.path.join(FILE_DIR, 'web/index.html'))
 
+# ----------------------------
+# Main App
+# ----------------------------
+
+def start_server_thread():
+    def target():
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
+        async def server_main():
+            try:
+                with voicemeeterlib.api(CONFIG['voicemeeter']['kind']) as v:
+                    server['vm'] = v
+                    if CONFIG['voicemeeter']['lock']:
+                        v.command.lock = True
+
+                    runner = web.AppRunner(app)
+                    await runner.setup()
+                    site = web.TCPSite(runner, server['host'], server['port'])
+                    await site.start()
+                    log.info(f"Server started at http://{server['host']}:{server['port']}")
+
+                    # wait until shutdown is requested
+                    await server['shutdown_event'].wait()
+
+                    log.info("Shutting down server...")
+                    await runner.cleanup()
+                    if CONFIG['voicemeeter']['lock']:
+                        v.command.lock = False
+            except Exception as e:
+                log.error(f"Server error: {e}")
+
+        shutdown_event = asyncio.Event()
+        server['shutdown_event'] = shutdown_event
+        server['loop'] = loop
+
+        try:
+            loop.run_until_complete(server_main())
+        finally:
+            loop.close()
+
+    t = threading.Thread(target=target, daemon=True)
+    server['thread'] = t
+    t.start()
+
+def stop_server():
+    loop = server.get('loop')
+    if loop and server.get('shutdown_event'):
+        loop.call_soon_threadsafe(lambda: server['shutdown_event'].set())
+
+# Tray Menu Actions
+def menu_open_ui(icon, item):
+        url = f"http://{server['host']}:{server['port']}/"
+        webbrowser.open(url)
+
+def menu_restart_audio_engine(icon, item):
+    loop = server.get('loop')
+    if loop and server.get('vm'):
+        loop.call_soon_threadsafe(lambda: server['vm'].command.restart())
+
+def menu_quit_app(icon, item):
+    log.info("Quit requested from tray")
+    icon.stop()
+    stop_server()
+
 if __name__ == '__main__':
     app = web.Application()
     app.router.add_get('/', index)
     app.router.add_get('/ws', websocket_handler)
     app.router.add_static('/', path=os.path.join(FILE_DIR, 'web'), name='web')
 
-    with voicemeeterlib.api(CONFIG['voicemeeter']['kind']) as vm:
-        if CONFIG['voicemeeter']['lock']:
-            vm.command.lock = True
-        try:
-            web.run_app(app, host=CONFIG['http']['host'], port=CONFIG['http']['port'], access_log=None)
-        except KeyboardInterrupt:
-            log.info("Server stopped by user")
-            if CONFIG['voicemeeter']['lock']:
-                vm.command.lock = False
+    # Server state shared between threads
+    server = {
+        'thread': None,
+        'loop': None,
+        'shutdown_event': None,
+        'vm': None,
+        'host': CONFIG['http']['host'],
+        'port': CONFIG['http']['port']
+    }
+
+    # Start server in background thread
+    start_server_thread()
+
+    # Setup tray icon
+    def make_icon_image(size=64):
+        ico_path = os.path.join(FILE_DIR, "icon.ico")
+        img = Image.open(ico_path)
+        img = img.convert("RGBA")
+        if img.size != (size, size):
+            img = img.resize((size, size), Image.LANCZOS)
+        return img
+
+    icon_image = make_icon_image()
+
+    # Build and run tray icon (runs in main thread)
+    tray_menu = pystray.Menu(
+        pystray.MenuItem('Open UI', menu_open_ui),
+        pystray.MenuItem('Restart audio engine', menu_restart_audio_engine),
+        pystray.MenuItem('Quit', menu_quit_app)
+    )
+
+    tray_icon = pystray.Icon('vmremote', icon_image, 'MeeterLink Server', tray_menu)
+
+    try:
+        tray_icon.run()
+    finally:
+        stop_server()

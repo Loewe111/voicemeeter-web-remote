@@ -161,6 +161,8 @@ class VMBus {
         ]
     }
 
+    delay = 0;
+
     capabilities = {
         parametric_eq: true,
         band_eq: false,
@@ -168,6 +170,7 @@ class VMBus {
         gate: false,
         denoiser: false,
         fx: true,
+        delay: false,
     };
 
     device = null;
@@ -185,6 +188,29 @@ class VMBus {
         this.device_rate = object.device_rate || null;
         this.isPhysical = object.isPhysical || false;
         this.monitor = object.monitor || false;
+        this.delay = object.delay || this.delay;
+
+        if (object.isPhysical) {
+            this.capabilities = {
+                parametric_eq: true,
+                band_eq: false,
+                compressor: false,
+                gate: false,
+                denoiser: false,
+                fx: true,
+                delay: true,
+            };
+        } else {
+            this.capabilities = {
+                parametric_eq: true,
+                band_eq: false,
+                compressor: false,
+                gate: false,
+                denoiser: false,
+                fx: false,
+                delay: false,
+            };
+        }
     }
 
     asObject() {
@@ -196,6 +222,7 @@ class VMBus {
             label: this.label,
             eq: this.eq,
             fx: this.fx,
+            delay: this.delay,
         };
     }
 }

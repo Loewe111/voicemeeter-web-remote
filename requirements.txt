@@ -1,2 +1,4 @@
 aiohttp
 voicemeeter-api
+pystray
+Pillow

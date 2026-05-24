@@ -7,6 +7,7 @@ a = Analysis(
     binaries=[],
     datas=[
         ('config.toml', '.'),
+        ('icon.ico', '.'),
         ('web/*.*', 'web'),
         ('web/images/*', 'web/images'),
         ('web/fonts/*', 'web/fonts'),
@@ -31,7 +32,7 @@ exe = EXE(
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    console=True,
+    console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
