@@ -1,0 +1,23 @@
+:root {
+    --font-text: Arial, sans-serif;
+    --font-numbers: monospace;
+
+    --background: #101010;
+    --text: #fff;
+    --primary: #b8d63e;
+    --primary-text: #000;
+
+    --border-width: 1px;
+}
+
+body {
+    background-color: #020202;
+    color: #ffffff;
+    font-family: var(--font-text);
+
+    /* height: 100dvh;
+    margin: 0; */
+
+    display: grid;
+    grid-template-rows: auto 1fr;
+}

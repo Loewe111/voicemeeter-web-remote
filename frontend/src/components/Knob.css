@@ -1,0 +1,76 @@
+.knob {
+    --value: 0;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+
+    user-select: none;
+}
+
+.knob.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.knob .knob-label {
+    font-size: 0.75rem;
+}
+
+.knob .knob-value {
+    font-family: var(--font-numbers);
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: var(--knob-text);
+    z-index: 1;
+}
+
+.knob .knob-knob {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    height: 3rem;
+    width: 3rem;
+
+    background-color: var(--background);
+    border: 5px solid var(--primary);
+    border-radius: 50%;
+
+    cursor: pointer;
+
+    outline: 2px solid transparent;
+    outline-offset: 0px;
+    transition: outline 0.2s ease-in-out, outline-offset 0.2s ease-in-out;
+}
+
+.knob.dragging .knob-knob {
+    outline: 2px solid #fff5;
+    outline-offset: 2px;
+}
+
+.knob .knob-indicator {
+    content: '';
+    position: absolute;
+    z-index: 0;
+
+    top: 0;
+
+    width: 5px;
+    height: 51%;
+
+    transform-origin: center bottom;
+    transform: rotate(calc(var(--value) * 3deg - 150deg));
+
+    background: linear-gradient(
+        to bottom,
+        var(--primary) 0%,
+        transparent 50%,
+        transparent 100%
+    );
+}

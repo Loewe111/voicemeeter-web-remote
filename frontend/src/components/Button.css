@@ -1,0 +1,32 @@
+
+.button {
+    height: 2rem;
+    
+    background: var(--background);
+    color: var(--text);
+    
+    border: 2px solid var(--primary);
+    border-radius: 2px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.25rem;
+
+    text-transform: uppercase;
+    
+    user-select: none;
+    cursor: pointer;
+
+    &.on {
+        background: var(--primary);
+        color: var(--primary-text);
+    }
+
+    & .button-label {
+        font-family: var(--font-text);
+        font-size: 0.75rem;
+        font-weight: 900;
+        text-align: center;
+    }
+}

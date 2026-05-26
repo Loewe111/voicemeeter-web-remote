@@ -1,0 +1,13 @@
+@font-face {
+    font-family: "Material Symbols Sharp";
+    src: url("../assets/fonts/material-symbols.woff2") format("woff2");
+
+    font-style: normal;
+    font-weight: normal;
+}
+
+.material-symbol {
+    font-family: 'Material Symbols Sharp', sans-serif;
+    vertical-align: middle;
+    line-height: 1;
+}

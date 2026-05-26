@@ -1,0 +1,103 @@
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.5rem 1rem;
+    background-color: #101010;
+    color: var(--text);
+
+    & .header-title {
+        font-family: var(--font-text);
+        font-size: 1.25rem;
+        font-weight: bold;
+    }
+
+    & .header-instance-info {
+        display: flex;
+        flex-direction: column;
+
+        & .header-instance-name {
+            font-family: var(--font-text);
+            font-size: 1rem;
+            font-weight: normal;
+            color: #fff5;
+        }
+
+        & .header-instance-ip {
+            font-family: var(--font-text);
+            font-size: 0.75rem;
+            font-weight: normal;
+            color: #fff5;
+        }
+    }
+
+    & .spacer {
+        flex: 1;
+    }
+}
+
+
+.header-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    & .status-icon {
+        font-size: 1.5rem;
+        color: #fff2;
+        cursor: help;
+
+        &.ok {
+            color: #3ed65f;
+        }
+
+        &.error {
+            color: #d63e3e;
+        }
+
+        &.activity {
+            color: #d6d63e
+        }
+    }
+}
+
+.header-views {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+
+    & .header-view, .header-system-view {
+        height: 1rem;
+        padding: 0.5rem;
+        border: 2px solid #fff2;
+        border-radius: 2px;
+        user-select: none;
+        cursor: pointer;
+
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    
+        &.active {
+            background-color: #fff2;
+        }
+    }
+
+    & .header-view {
+        width: 5rem;
+    }
+
+    & .header-system-view {
+        width: 1.5rem;
+        justify-content: center;
+    }
+
+    & .header-view-seperator {
+        width: 2px;
+        height: 1.5rem;
+        background-color: #fff2;
+    }
+}
